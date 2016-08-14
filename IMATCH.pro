@@ -17,14 +17,19 @@ TEMPLATE = app
 SOURCES += \
     main.cpp \
     ncc.cpp \
-    match.cpp
+    match.cpp \
+    delaunay.cpp \
+    feature.cpp \
+    utils.cpp
 
 QMAKE_MAC_SDK = macosx10.11
 
 HEADERS += \
-    common.h \
     ncc.h \
-    match.h
+    match.h \
+    delaunay.h \
+    feature.h \
+    utils.h
 
 INCLUDEPATH +=/usr/local/include              \
 
@@ -46,3 +51,4 @@ LIBS += -L/usr/local/lib                        \
         -lopencv_videostab                      \
         -lopencv_superres                       \
         -lopencv_nonfree                        \
+        -lX11                                   \

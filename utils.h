@@ -8,6 +8,7 @@
 #include <fstream>
 #include <string>
 #include <stdarg.h>
+#include <X11/Xlib.h>
 //omp
 #ifdef _OPENMP
 #include <omp.h>
@@ -79,8 +80,9 @@ void lowerString(std::string &str);
 void getPtsFromMatches(const std::vector<Match>& matches,std::vector<cv::Point2f>& lpts,std::vector<cv::Point2f>& rpts);
 void readMatches(const std::string filename,std::vector<Match>& matches,bool withTitle=false,bool withCC=false, bool withWindowSize=false,
                  bool withArcgisCoor=false,bool withParaXY=false);
-void showImage(cv::Mat &img,std::string title="TEST",double scale=1.0);
+void showImage(const cv::Mat &img,std::string title="TEST",double scale=1.0);
 void showImagepair(const cv::Mat& img1,const cv::Mat& img2,std::string title="TEST",double scale=1.0);
+void showMulImages(const std::vector<cv::Mat>& srcImgs, cv::Size SubPlot, cv::Size ImgMax_Size,const std::string title="TEST");
 void printKeypoints(std::string filename,const std::vector<cv::KeyPoint>& kpts, bool display=false);
 void printKeypoints(std::string filename,const std::vector<cv::Point2f>& kpts, bool display=false);
 bool exitwithErrors(const char *msg);

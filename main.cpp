@@ -23,7 +23,7 @@ std::string xshift_path="0";
 std::string yshift_path="0";
 double cor_coe=0.8;                          /*correlation coefficient threshold*/
 float version_id=2.0;                        /*version information*/
-std::string version_Date="2016-08-10";
+std::string version_Date="2016-08-14";
 
 struct option long_options[] = {
 {"control", 1, NULL, 'c'},
@@ -258,7 +258,6 @@ int main(int argc, char *argv[]){
         cv::drawKeypoints(img1,kpts1,dst1);
         cv::drawKeypoints(img1,kpts1,dst2);
         showImagepair(dst1,dst2,"Feature Extraction",image_scale);
-        //http://www.cnblogs.com/ouxiaogu/p/3379819.html
         printKeypoints(std::string(cur_dir)+std::string(".leftpoints.dat"),pts1);
         printKeypoints(std::string(cur_dir)+std::string(".rightpoints.dat"),pts2);
     }
