@@ -40,14 +40,29 @@ bool Delaunay::iswithinTri (const cv::Point2f &pt, int tri_id) const
     return cv::pointPolygonTest(contour,pt,false)>0;
 }
 
-//int Delaunay::findTri(const cv::Point2f &pt)
-//{
-//    for(size_t i=0;i<triangulation.size();++i){
-//        if(iswithinTri(pt,i))
-//            return i;
-//    }
-//    return -1;
-//}
+int Delaunay::findTri(const cv::Point2f &pt)
+{
+    for(size_t i=0;i<triangulation.size();++i){
+        if(iswithinTri(pt,i))
+            return i;
+    }
+    return -1;
+}
+
+void Delaunay::getTrilist(std::vector<cv::Point3i> &list)
+{
+    list.clear();
+    if(triangulation.size()==0){
+        //not generate the triangulation yet
+        exitwithErrors("Please generate the triangulation before retrieve the triangulation list!\n");
+    }else{
+        int ntris=this->getNumberOfTri();
+        for(int i=0;i<ntris;++i){
+            cv::Point3i pts_idx(triangulation[i].vtx_idx[0],triangulation[i].vtx_idx[1],triangulation[i].vtx_idx[2]);
+            list.push_back(pts_idx);
+        }
+    }
+}
 
 
 ////double Delaunay::interpolateAttr (const cv::Point2f &pt, int tri_id) const{
@@ -201,29 +216,30 @@ void Delaunay::generateDelaunay(const std::vector<cv::Point2f> &pts,const std::v
 }
 
 
-//void Delaunay::generateDelaunay(const std::vector<cv::KeyPoint> &kpts,const std::vector<double>& attribute){
-//    std::vector<cv::Point2f> pts;
-//    KeyPoint2Point2f(kpts,pts);
-//    generateDelaunay(pts,attribute);
-//}
+void Delaunay::generateDelaunay(const std::vector<cv::KeyPoint> &kpts,const std::vector<double>& attribute){
+    std::vector<cv::Point2f> pts;
+    KeyPoint2Point2f(kpts,pts);
+    generateDelaunay(pts,attribute);
+}
 
 
-//void Delaunay::generateDelaunay(const std::vector<Match> &matches, int mode){
-//    std::vector<double> attribute;
-//    for(int i=0;i<matches.size();++i){
-//        double attri;
-//        if(mode==1)
-//            attri=matches[i].p1.x-matches[i].p2.x;
-//        else if(mode==2)
-//            attri=matches[i].p1.y-matches[i].p2.y;
-//        else
-//            exitwithErrors("Unknown delaunay generation type!");
-//        attribute.push_back(attri);
-//    }
-//    std::vector<cv::Point2f> l,r;
-//    getPtsFromMatches(matches,l,r);
-//    generateDelaunay(l,attribute);
-//}
+void Delaunay::generateDelaunay(const std::vector<Match> &matches, int mode){
+    std::vector<double> attribute;
+    if(mode!=0)
+        for(int i=0;i<matches.size();++i){
+            double attri;
+            if(mode==1)
+                attri=matches[i].p1.x-matches[i].p2.x;
+            else if(mode==2)
+                attri=matches[i].p1.y-matches[i].p2.y;
+            else
+                exitwithErrors("Unknown delaunay generation type!");
+            attribute.push_back(attri);
+        }
+    std::vector<cv::Point2f> l,r;
+    getPtsFromMatches(matches,l,r);
+    generateDelaunay(l,attribute);
+}
 
 void Delaunay::getTriangulation(const std::vector<double> &attribute){
     std::vector<double> attri_backup=attribute;

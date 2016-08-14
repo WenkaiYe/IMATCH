@@ -76,13 +76,54 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
                      const std::vector<cv::Point2f>& lpts, const std::vector<cv::Point2f>& rpts,
                      const std::vector<Match>& seeds, std::vector<Correspondence>& matches,
                      int window_radius, int search_radius, double mcc_threshold){
-    Delaunay tin1(img1);
+    Delaunay tin(img1);
     std::vector<cv::Point2f> pts1,pts2;
     getPtsFromMatches(seeds,pts1,pts2);
-    tin1.generateDelaunay(pts1);
-    tin1.drawDelaunay(img1,image_scale);
+    tin.generateDelaunay(pts1);
+    std::vector<int> f2t1,f2t2;
+    std::vector<std::vector<int> > t2f1,t2f2;
+    genFeature2TriangleTable(lpts,tin,f2t1,t2f1);
+    //    tin1.drawDelaunay(img1,image_scale);
     int a=1;
+
 }
+
+void genFeature2TriangleTable(const std::vector<cv::Point2f> &features, const Delaunay& tris,
+                              std::vector<int>& f2t, std::vector<std::vector<int> >& t2f)
+{
+    std::vector<cv::Point2f> f=features;
+    int ntris=tris.getNumberOfTri();
+    assert(ntris>0);
+    f2t.clear();
+    t2f.clear();
+    std::vector<int> idx_backup;
+    for(int i=0;i<f.size();++i)
+        idx_backup.push_back(i);
+    for(int i=0;i<ntris;++i){
+        std::vector<int> pts;
+        std::vector<cv::Point2f>::iterator iter=f.begin();
+        std::vector<int>::iterator iter2=idx_backup.begin();
+        for(;iter!=f.end();)
+            if(tris.iswithinTri(*iter,i)){
+                //update f2t & t2f
+                f2t.push_back(i);
+                pts.push_back(*iter2);
+                //delete this point from the point set
+                f.erase(iter);
+                idx_backup.erase(iter2);
+            }
+        ++iter;
+        ++iter2;
+        t2f.push_back(pts);
+    }
+}
+
+
+
+
+
+
+
 
 
 

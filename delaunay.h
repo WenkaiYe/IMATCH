@@ -27,9 +27,9 @@ public:
     //generate the triangulation
     void generateDelaunay(const std::vector<cv::Point2f>& pts,
                           const std::vector<double>& attribute=cv::vector<double>());
-    void generateDelaunay(const std::vector<cv::KeyPoint>& kpts/*,
-                          const std::vector<double>& attribute=cv::vector<double>{}*/);
-//    void generateDelaunay(const std::vector<Match>& matches, int mode=1);
+    void generateDelaunay(const std::vector<cv::KeyPoint>& kpts,
+                          const std::vector<double>& attribute=cv::vector<double>());
+    void generateDelaunay(const std::vector<Match>& matches, int mode=0);
     //get the triangulation
     void getTriangulation(const std::vector<double>& attribute=std::vector<double>());
     //draw the triangulation
@@ -38,8 +38,10 @@ public:
     int getNumberOfTri() const {return triangulation.size();}
     //check if the point is inside the certain triangle
     bool iswithinTri(const cv::Point2f& pt,int tri_id) const;
-//    //find the corresponding triangle
-//    int findTri(const cv::Point2f& pt);
+    //find the corresponding triangle
+    int findTri(const cv::Point2f& pt);
+    //
+    void getTrilist(std::vector<cv::Point3i>& list);
 //    //interpolate the attribute
 //    double interpolateAttr (const cv::Point2f& pt,int tri_id) const;
 //    //interpolate to get the parallax map

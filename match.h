@@ -7,6 +7,7 @@
 #include "delaunay.h"
 
 extern double image_scale;
+//typedef std::pair<int, int> ipair;
 
 void performMatching(const cv::Mat& img1, const cv::Mat& img2,
                      const std::vector<cv::Point2f>& lpts, const std::vector<cv::Point2f>& rpts,
@@ -20,5 +21,8 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
 
 void writeCorrespondences(const std::vector<Correspondence>& matches,char* path);
 
+void genFeature2TriangleTable(const std::vector<cv::Point2f>& features,
+                              const Delaunay& tris,
+                              std::vector<int>& f2t, std::vector<std::vector<int> >& t2f);
 #endif // MATCH
 
