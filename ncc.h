@@ -1,6 +1,6 @@
 #ifndef NCC_
 #define NCC_
-#include "common.h"
+#include "utils.h"
 
 //void NCCBasedMatch(const cv::Mat& tpl, const cv::Mat& src,cv::Point2f& pt1,cv::Point2f& pt2,
 //                   int window_radius, int search_radius, double& mcc);
