@@ -166,6 +166,7 @@ void showMulImages(const std::vector<cv::Mat>& srcImgs, cv::Size SubPlot, cv::Si
     cv::imshow(title.c_str(),dst);
 //    cv::imshow(title.c_str(), &(IplImage(dst)));
     cv::waitKey(0);
+    cv::destroyWindow(title.c_str());
 }
 
 void KeyPoint2Point2f(const std::vector<cv::KeyPoint>& src, std::vector<cv::Point2f>& dst){
