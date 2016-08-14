@@ -22,7 +22,10 @@ SOURCES += \
     feature.cpp \
     utils.cpp
 
+macx{
 QMAKE_MAC_SDK = macosx10.11
+INCLUDEPATH +=/opt/X11/include              \
+}
 
 HEADERS += \
     ncc.h \
@@ -51,4 +54,9 @@ LIBS += -L/usr/local/lib                        \
         -lopencv_videostab                      \
         -lopencv_superres                       \
         -lopencv_nonfree                        \
-        -lX11                                   \
+
+macx{
+LIBS += -L/opt/X11/lib -lX11                    \
+}else{
+LIBS += -L/usr/local/lib -lX11                  \
+}
