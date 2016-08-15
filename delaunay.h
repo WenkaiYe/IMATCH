@@ -41,7 +41,7 @@ public:
     //find the corresponding triangle
     int findTri(const cv::Point2f& pt);
     //
-    void getTrilist(std::vector<cv::Point3i>& list);
+    void getTrilist(std::vector<std::vector<int> > &list);
     //
 //    void getTriVtxes(const int tri_id, std::vector<cv::Point2f>& vtxes);
     //

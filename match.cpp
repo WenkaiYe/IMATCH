@@ -83,24 +83,28 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     std::vector<int> f2t1,f2t2;
     std::vector<std::vector<int> > t2f1,t2f2;
     genFeature2TriangleTable(lpts,tin,f2t1,t2f1);
-    std::vector<cv::Point3i> list;
+    std::vector<std::vector<int> > list;
     tin.getTrilist(list);
     //    tin1.drawDelaunay(img1,image_scale);
-    //    showFeatureInsideTriangles(img1, lpts, tin, t2f1);
+    showFeatureInsideTriangles(img1, lpts, tin, t2f1);
     for(int i=0; i<lpts.size(); ++i){
         int tri_id=f2t1[i];
-        std::vector<int> candidates_id=t2f1[tri_id];
-        cv::Point2f ppt;
-        //interpolate potential location
-        std::vector<cv::Point2f> tri1, tri2;
-        Delaunay::getTriVtxes(lpts, list[tri_id], tri1);
-        Delaunay::getTriVtxes(rpts, list[tri_id], tri2);
-        Delaunay::locateCandidate(tri1, lpts[i], tri2, ppt);
-        //find candidates within a certain range of the potential location
+        if(tri_id!=-1){
+            //        std::vector<int> candidates_id=t2f1[tri_id];
+            cv::Point2f ppt;
+            //interpolate potential location
+            std::vector<cv::Point2f> tri1, tri2;
+            Delaunay::getTriVtxes(pts1, list[tri_id], tri1);
+            Delaunay::getTriVtxes(pts2, list[tri_id], tri2);
+            //        Delaunay::locateCandidate(tri1, lpts[i], tri2, ppt);
+            std::vector<double> paras;
+            calAffineParas(tri1,tri2,paras);
+            //find candidates within a certain range of the potential location
+            int a=1;
+            //        for(int j=0; j<candidates_id.size(); ++j){
+            //            //calculate correlation coefficient
 
-        for(int j=0; j<candidates_id.size(); ++j){
-            //calculate correlation coefficient
-
+            //        }
         }
     }
 
@@ -119,19 +123,19 @@ void genFeature2TriangleTable(const std::vector<cv::Point2f> &features, const De
         idx_backup.push_back(i);
     for(int i=0;i<ntris;++i){
         std::vector<int> pts;
-        std::vector<cv::Point2f>::iterator iter=f.begin();
-        std::vector<int>::iterator iter2=idx_backup.begin();
-        for(;iter!=f.end();){
-            if(tris.iswithinTri(*iter,i)){
+//        std::vector<cv::Point2f>::iterator iter=f.begin();
+        std::vector<int>::iterator iter=idx_backup.begin();
+        for(;iter!=idx_backup.end();){
+            if(tris.iswithinTri(features[*iter],i)){
                 //update f2t & t2f
-                f2t.push_back(i);
-                pts.push_back(*iter2);
+                f2t[*iter]=i;
+                pts.push_back(*iter);
                 //delete this point from the point set
-                f.erase(iter);
-                idx_backup.erase(iter2);
+//                f.erase(iter);
+                idx_backup.erase(iter);
             }else{
                 ++iter;
-                ++iter2;
+//                ++iter2;
             }
         }
         t2f.push_back(pts);

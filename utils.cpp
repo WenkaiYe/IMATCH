@@ -283,7 +283,24 @@ void calAffineParas(const std::vector<cv::Point2f> &pts1, const std::vector<cv::
     cv::Mat x(6, 1, CV_64FC1);
     x.setTo(0);
     for(int i=0; i<3; ++i){
-        cv::Mat row=;
+        float x1,y1,x2,y2;
+        x1=pts1[i].x;
+        y1=pts1[i].y;
+        x2=pts2[i].x;
+        y2=pts2[i].y;
+        printf("%f\t%f\t%f\t%f\n",x1,y1,x2,y2);
+        //A matrix
+        cv::Mat row1=A.row(2*i);
+        cv::Mat row=(cv::Mat_<double>(1,6)<<1,x1,y1,0,0,0);
+        row.copyTo(row1);
+        cv::Mat row2=A.row(2*i+1);
+        row=(cv::Mat_<double>(1,6)<<0,0,0,1,x1,y1);
+        row.copyTo(row2);
+        //L matrix
+        L.at<double>(0,2*i)=x2;
+        L.at<double>(0,2*i+1)=y2;
     }
-
+    cv::solve(A,L,x);
+    std::cout<<x<<std::endl;
+    int a=1;
 }

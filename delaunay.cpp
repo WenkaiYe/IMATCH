@@ -56,7 +56,7 @@ int Delaunay::findTri(const cv::Point2f &pt)
     return -1;
 }
 
-void Delaunay::getTrilist(std::vector<cv::Point3i> &list)
+void Delaunay::getTrilist(std::vector<std::vector<int> > &list)
 {
     list.clear();
     if(triangulation.size()==0){
@@ -65,8 +65,11 @@ void Delaunay::getTrilist(std::vector<cv::Point3i> &list)
     }else{
         int ntris=this->getNumberOfTri();
         for(int i=0;i<ntris;++i){
-            cv::Point3i pts_idx(triangulation[i].vtx_idx[0],triangulation[i].vtx_idx[1],triangulation[i].vtx_idx[2]);
-            list.push_back(pts_idx);
+            std::vector<int> l;
+            l.push_back(triangulation[i].vtx_idx[0]);
+            l.push_back(triangulation[i].vtx_idx[1]);
+            l.push_back(triangulation[i].vtx_idx[2]);
+            list.push_back(l);
         }
     }
 }
@@ -309,7 +312,8 @@ void locateCandidate(const std::vector<cv::Point2f>& tri1, const cv::Point2f pt1
 }
 
 
-void Delaunay::getTriVtxes(const std::vector<cv::Point2f>& pts, const std::vector<int>& vtx_ids , std::vector<cv::Point2f>& vtxes)
+void Delaunay::getTriVtxes(const std::vector<cv::Point2f>& pts,
+                           const std::vector<int>& vtx_ids , std::vector<cv::Point2f>& vtxes)
 {
     size_t npts=pts.size();
     assert(npts>0);
