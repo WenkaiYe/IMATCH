@@ -271,3 +271,19 @@ void readMatches(const std::string filename, std::vector<Match> &matches,
     }
     in.close();
 }
+
+
+void calAffineParas(const std::vector<cv::Point2f> &pts1, const std::vector<cv::Point2f> &pts2, std::vector<double> &paras)
+{
+//    C++: bool solve(InputArray src1, InputArray src2, OutputArray dst, int flags=DECOMP_LU)
+    cv::Mat A(6, 6, CV_64FC1);
+    A.setTo(0);
+    cv::Mat L(6, 1, CV_64FC1);
+    L.setTo(0);
+    cv::Mat x(6, 1, CV_64FC1);
+    x.setTo(0);
+    for(int i=0; i<3; ++i){
+        cv::Mat row=;
+    }
+
+}

@@ -13,6 +13,7 @@ void NCCBasedMatch(const cv::Mat &tpl, const cv::Mat &src, cv::Point2f &pt1, cv:
     cv::Mat ccMat(result_rows,result_cols,CV_64FC1);
     //Do the Matching and Normalize
     matchTemplate(src,tpl,ccMat,cv::TM_CCOEFF_NORMED);
+//    cv::normalize( result, result, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
     //Localizing the best match with minMaxLoc
     double minVal;
     cv::Point minLoc,maxLoc;

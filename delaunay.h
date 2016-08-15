@@ -33,7 +33,7 @@ public:
     //get the triangulation
     void getTriangulation(const std::vector<double>& attribute=std::vector<double>());
     //draw the triangulation
-    void drawDelaunay(const cv::Mat& src,double scale=1.0,cv::Scalar delaunayColor=cv::Scalar(0,0,255));
+    void drawDelaunay(const cv::Mat& src, cv::Mat& dst, int tri_idx=-1, cv::Scalar delaunayColor=cv::Scalar(0,255,0)) const;
     //get the number of triangles contained in the triangulation
     int getNumberOfTri() const {return triangulation.size();}
     //check if the point is inside the certain triangle
@@ -42,7 +42,15 @@ public:
     int findTri(const cv::Point2f& pt);
     //
     void getTrilist(std::vector<cv::Point3i>& list);
-//    //interpolate the attribute
+    //
+//    void getTriVtxes(const int tri_id, std::vector<cv::Point2f>& vtxes);
+    //
+    static void locateCandidate(const std::vector<cv::Point2f>& tri1, const cv::Point2f pt1,
+                         const std::vector<cv::Point2f>& tri2, cv::Point2f& pt2);
+    //
+    static void getTriVtxes(const std::vector<cv::Point2f>& pts, const std::vector<int>& vtx_ids , std::vector<cv::Point2f>& vtxes);
+
+    //interpolate the attribute
 //    double interpolateAttr (const cv::Point2f& pt,int tri_id) const;
 //    //interpolate to get the parallax map
 //    void interpolateSurface(double *&pData,int flag=0);
@@ -63,6 +71,7 @@ private:
     //points for building up the triangulation
     std::vector<vertex> vertexes;
 };
+
 
 #endif // DELAUNAY_H
 

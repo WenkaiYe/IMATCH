@@ -1,13 +1,13 @@
-
 #include "delaunay.h"
 
-void Delaunay::drawDelaunay(const cv::Mat& src,double scale,cv::Scalar delaunayColor){
+void Delaunay::drawDelaunay(const cv::Mat& src, cv::Mat& dst, int tri_idx, cv::Scalar delaunayColor) const{
     bool draw;
-    cv::Mat dst=src.clone();
+    dst=src.clone();
     if(dst.type()==CV_8UC1){
         cv::cvtColor(dst,dst,CV_GRAY2RGB);
     }
-    for(size_t i = 0; i < triangulation.size(); ++i)
+    int ntris=triangulation.size();
+    for(size_t i = 0; i < ntris; ++i)
     {
         triangle tri = triangulation[i];
 
@@ -23,12 +23,19 @@ void Delaunay::drawDelaunay(const cv::Mat& src,double scale,cv::Scalar delaunayC
         }
 
         if (draw){
-            cv::line(dst, pts[0], pts[1], delaunayColor, 1);
-            cv::line(dst, pts[1], pts[2], delaunayColor, 1);
-            cv::line(dst, pts[2], pts[0], delaunayColor, 1);
+            if(tri_idx==i){
+                cv::line(dst, pts[0], pts[1], cv::Scalar(0, 0, 255), 2);
+                cv::line(dst, pts[1], pts[2], cv::Scalar(0, 0, 255), 2);
+                cv::line(dst, pts[2], pts[0], cv::Scalar(0, 0, 255), 2);
+
+            }else{
+                cv::line(dst, pts[0], pts[1], delaunayColor, 1);
+                cv::line(dst, pts[1], pts[2], delaunayColor, 1);
+                cv::line(dst, pts[2], pts[0], delaunayColor, 1);
+            }
         }
     }
-    showImage(dst,"Delaunay",scale);
+//    showImage(dst,title,scale);
 }
 
 
@@ -63,7 +70,6 @@ void Delaunay::getTrilist(std::vector<cv::Point3i> &list)
         }
     }
 }
-
 
 ////double Delaunay::interpolateAttr (const cv::Point2f &pt, int tri_id) const{
 ////    MatrixXd A(3,3);
@@ -294,4 +300,46 @@ void Delaunay::getTriangulation(const std::vector<double> &attribute){
                 triangulation.push_back(tri);
             }
 }
+
+
+void locateCandidate(const std::vector<cv::Point2f>& tri1, const cv::Point2f pt1,
+                     const std::vector<cv::Point2f>& tri2, cv::Point2f& pt2)
+{
+
+}
+
+
+void Delaunay::getTriVtxes(const std::vector<cv::Point2f>& pts, const std::vector<int>& vtx_ids , std::vector<cv::Point2f>& vtxes)
+{
+    size_t npts=pts.size();
+    assert(npts>0);
+    vtxes.clear();
+    for(int i=0; i<3; ++i)
+        if(vtx_ids[i]>=0 && vtx_ids[i]<npts)
+            vtxes.push_back(pts[vtx_ids[i]]);
+        else
+            exitwithErrors("index of vertex is beyond the size of pts!\n");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

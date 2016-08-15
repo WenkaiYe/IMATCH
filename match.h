@@ -24,5 +24,9 @@ void writeCorrespondences(const std::vector<Correspondence>& matches,char* path)
 void genFeature2TriangleTable(const std::vector<cv::Point2f>& features,
                               const Delaunay& tris,
                               std::vector<int>& f2t, std::vector<std::vector<int> >& t2f);
+
+void showFeatureInsideTriangles(const cv::Mat& img, const std::vector<cv::Point2f>& features,
+                                const Delaunay& tris, const std::vector<std::vector<int> >& t2f);
+
 #endif // MATCH
 
