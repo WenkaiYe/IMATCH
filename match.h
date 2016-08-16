@@ -28,5 +28,7 @@ void genFeature2TriangleTable(const std::vector<cv::Point2f>& features,
 void showFeatureInsideTriangles(const cv::Mat& img, const std::vector<cv::Point2f>& features,
                                 const Delaunay& tris, const std::vector<std::vector<int> >& t2f);
 
+void constructContour(const cv::Point2f& center, const int searchRadius, std::vector<cv::Point2f>& contour);
+
 #endif // MATCH
 

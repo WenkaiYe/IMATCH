@@ -88,4 +88,6 @@ void printKeypoints(std::string filename,const std::vector<cv::KeyPoint>& kpts, 
 void printKeypoints(std::string filename,const std::vector<cv::Point2f>& kpts, bool display=false);
 bool exitwithErrors(const char *msg);
 void calAffineParas(const std::vector<cv::Point2f>& pts1, const std::vector<cv::Point2f>& pts2, std::vector<double>& paras);
+inline void affineTransform(const cv::Point2f& src, const std::vector<double>& paras, cv::Point2f& dst);
+
 #endif

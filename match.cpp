@@ -87,27 +87,29 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     tin.getTrilist(list);
     //    tin1.drawDelaunay(img1,image_scale);
     showFeatureInsideTriangles(img1, lpts, tin, t2f1);
-    for(int i=0; i<lpts.size(); ++i){
-        int tri_id=f2t1[i];
-        if(tri_id!=-1){
-            //        std::vector<int> candidates_id=t2f1[tri_id];
-            cv::Point2f ppt;
-            //interpolate potential location
-            std::vector<cv::Point2f> tri1, tri2;
-            Delaunay::getTriVtxes(pts1, list[tri_id], tri1);
-            Delaunay::getTriVtxes(pts2, list[tri_id], tri2);
-            //        Delaunay::locateCandidate(tri1, lpts[i], tri2, ppt);
-            std::vector<double> paras;
-            calAffineParas(tri1,tri2,paras);
-            //find candidates within a certain range of the potential location
-            int a=1;
-            //        for(int j=0; j<candidates_id.size(); ++j){
-            //            //calculate correlation coefficient
+    for(int i=0; i<t2f1.size(); ++i){
+        //get features inside the triangle
+        std::vector<int> pts_idx=t2f1[i];
+        //calculate transformation parameters
+        std::vector<cv::Point2f> tri1, tri2;
+        std::vector<double> paras;
+        Delaunay::getTriVtxes(pts1, list[i], tri1);
+        Delaunay::getTriVtxes(pts2, list[i], tri2);
+        calAffineParas(tri1, tri2, paras);
+        for(int j=0; j<pts_idx.size(); ++j){
+            cv::Point2f src=lpts[pts_idx[j]];
+            cv::Point2f dst;
+            //estimate potential location
+            affineTransform(src, paras, dst);
+            dst.x=floor((double)dst.x);
+            dst.y=floor((double)dst.y);
+            //construct search contour
+            std::vector<cv::Point2f> contour;
+            constructContour(dst, search_radius, contour);
 
-            //        }
+            cv::pointPolygonTest(contour,pt,false)>0;
         }
     }
-
 }
 
 void genFeature2TriangleTable(const std::vector<cv::Point2f> &features, const Delaunay& tris,
@@ -166,4 +168,17 @@ void showFeatureInsideTriangles(const cv::Mat& img, const std::vector<cv::Point2
         }
         showImage(disp, DEFAULT_WINDOW_NAME, image_scale);
     }
+}
+
+void constructContour(const cv::Point2f& center, const int searchRadius, std::vector<cv::Point2f>& contour){
+    cv::Point2f ul,ur,ll,lr;
+    ul=cv::Point2f(center.x-searchRadius, center.y-searchRadius);
+    ur=cv::Point2f(center.x+searchRadius, center.y-searchRadius);
+    ll=cv::Point2f(center.x-searchRadius, center.y+searchRadius);
+    lr=cv::Point2f(center.x+searchRadius, center.y+searchRadius);
+    contour.clear();
+    contour.push_back(ul);
+    contour.push_back(ur);
+    contour.push_back(ll);
+    contour.push_back(lr);
 }

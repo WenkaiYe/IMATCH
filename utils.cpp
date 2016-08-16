@@ -301,6 +301,13 @@ void calAffineParas(const std::vector<cv::Point2f> &pts1, const std::vector<cv::
         L.at<double>(0,2*i+1)=y2;
     }
     cv::solve(A,L,x);
-    std::cout<<x<<std::endl;
-    int a=1;
+//    std::cout<<x<<std::endl;
+//    int a=1;
+}
+
+inline void affineTransform(const cv::Point2f& src, const std::vector<double>& paras, cv::Point2f& dst){
+    assert(paras.size()==6);
+    double a0,a1,a2,b0,b1,b2;
+    dst.x=a0+a1*src.x+a2*src.y;
+    dst.y=b0+b1*src.x+b2*src.y;
 }
