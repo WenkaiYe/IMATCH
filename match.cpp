@@ -104,10 +104,21 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
             dst.x=floor((double)dst.x);
             dst.y=floor((double)dst.y);
             //construct search contour
-            std::vector<cv::Point2f> contour;
+//            std::vector<cv::Point2f> contour;
+            cv::Rect contour;
             constructContour(dst, search_radius, contour);
+            //find right-side features within the contour
+            std::vector<cv::Point2f> candidates;
+            for(int k=0; k<rpts.size(); ++k){
+                cv::Point2f pt=rpts[k];
+                if(contour.contains(pt)){
+                    //calculate correlation coefficient
 
-            cv::pointPolygonTest(contour,pt,false)>0;
+                    //store the results
+                    candidates.push_back(pt);
+                }
+            }
+            showCandidates(img1,img2,src,dst,contour,candidates);
         }
     }
 }
@@ -181,4 +192,14 @@ void constructContour(const cv::Point2f& center, const int searchRadius, std::ve
     contour.push_back(ur);
     contour.push_back(ll);
     contour.push_back(lr);
+}
+
+void constructContour(const cv::Point2f& center, const int searchRadius, cv::Rect& contour){
+    cv::Point2f ul,ur,ll,lr;
+    ul=cv::Point2f(center.x-searchRadius, center.y-searchRadius);
+//    ur=cv::Point2f(center.x+searchRadius, center.y-searchRadius);
+//    ll=cv::Point2f(center.x-searchRadius, center.y+searchRadius);
+//    lr=cv::Point2f(center.x+searchRadius, center.y+searchRadius);
+//    contour.clear();
+    contour=cv::Rect(ul.x, ul.y, 2*searchRadius, 2*searchRadius);
 }

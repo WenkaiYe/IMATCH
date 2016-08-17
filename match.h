@@ -30,5 +30,6 @@ void showFeatureInsideTriangles(const cv::Mat& img, const std::vector<cv::Point2
 
 void constructContour(const cv::Point2f& center, const int searchRadius, std::vector<cv::Point2f>& contour);
 
+void constructContour(const cv::Point2f& center, const int searchRadius, cv::Rect& contour);
 #endif // MATCH
 

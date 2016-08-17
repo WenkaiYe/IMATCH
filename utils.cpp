@@ -288,7 +288,7 @@ void calAffineParas(const std::vector<cv::Point2f> &pts1, const std::vector<cv::
         y1=pts1[i].y;
         x2=pts2[i].x;
         y2=pts2[i].y;
-        printf("%f\t%f\t%f\t%f\n",x1,y1,x2,y2);
+//        printf("%f\t%f\t%f\t%f\n",x1,y1,x2,y2);
         //A matrix
         cv::Mat row1=A.row(2*i);
         cv::Mat row=(cv::Mat_<double>(1,6)<<1,x1,y1,0,0,0);
@@ -301,13 +301,44 @@ void calAffineParas(const std::vector<cv::Point2f> &pts1, const std::vector<cv::
         L.at<double>(0,2*i+1)=y2;
     }
     cv::solve(A,L,x);
+
+    for(int i=0; i<6; ++i){
+        double t=x.at<double>(i,0);
+        paras.push_back(t);
+    }
+
 //    std::cout<<x<<std::endl;
 //    int a=1;
 }
 
-inline void affineTransform(const cv::Point2f& src, const std::vector<double>& paras, cv::Point2f& dst){
-    assert(paras.size()==6);
-    double a0,a1,a2,b0,b1,b2;
-    dst.x=a0+a1*src.x+a2*src.y;
-    dst.y=b0+b1*src.x+b2*src.y;
+//inline void affineTransform(const cv::Point2f& src, const std::vector<double>& paras, cv::Point2f& dst)
+
+void showCandidates(const cv::Mat& img1, const cv::Mat& img2,
+                    const cv::Point2f& src, const cv::Point2f& dst,
+                    const cv::Rect& contour, const std::vector<cv::Point2f>& pts){
+    cv::Mat left_img=img1.clone();
+    if(left_img.type()==CV_8UC1){
+        cv::cvtColor(left_img,left_img,CV_GRAY2RGB);
+    }
+    cv::Mat right_img=img2.clone();
+    if(right_img.type()==CV_8UC1){
+        cv::cvtColor(right_img,right_img,CV_GRAY2RGB);
+    }
+    cv::circle(left_img,src,5,cv::Scalar(0,0,255),3);
+//    cv::imshow("Left Scene",left_img);
+    //draw rectangle
+    cv::Point2f ul,ur,ll,lr;
+    ul=cv::Point2f(contour.x, contour.y);
+    ur=cv::Point2f(contour.x+contour.width, contour.y);
+    ll=cv::Point2f(contour.x, contour.y+contour.height);
+    lr=cv::Point2f(contour.x+contour.width, contour.y+contour.height);
+    cv::line(right_img,ul,ur,cv::Scalar(255,0,0),2);
+    cv::line(right_img,ur,lr,cv::Scalar(255,0,0),2);
+    cv::line(right_img,lr,ll,cv::Scalar(255,0,0),2);
+    cv::line(right_img,ll,ul,cv::Scalar(255,0,0),2);
+    //draw candidates
+    for(int i=0; i<pts.size(); ++i){
+        cv::circle(right_img, pts[i], 2, cv::Scalar(0,255,0),2);
+    }
+    showImagepair(left_img,right_img);
 }
