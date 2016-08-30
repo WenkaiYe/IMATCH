@@ -2,7 +2,7 @@
 
 void performMatching(const cv::Mat& img1, const cv::Mat& img2,
                      const std::vector<cv::Point2f>& lpts, const std::vector<cv::Point2f>& rpts,
-                     std::vector<Correspondence>& matches,
+                     std::vector<Match>& matches,
                      int window_radius, int search_radius, double mcc_threshold)
 {
     matches.clear();
@@ -38,20 +38,20 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
         NCCBasedMatch(tpl,src,p1,p2,mcc,state);
         if(state)
             if(mcc>mcc_threshold){
-                Correspondence match;
+                Match match;
                 match.p1=point1;
                 match.p2=point2+p2-cv::Point2f(window_radius+search_radius,window_radius+search_radius);
                 match.corr=mcc;
-                match.dx=match.p2.x-match.p1.x;
-                match.dy=match.p2.y-match.p1.y;
-                match.wsize=window_radius*2;
+//                match.dx=match.p2.x-match.p1.x;
+//                match.dy=match.p2.y-match.p1.y;
+//                match.wsize=window_radius*2;
                 matches.push_back(match);
             }
     }
 }
 
 
-void writeCorrespondences(const std::vector<Correspondence> &matches, char* path)
+void writeCorrespondences(const std::vector<Match> &matches, char* path)
 {
     FILE* stream;
     if((stream = fopen(path, "wt")) == NULL)
@@ -60,13 +60,13 @@ void writeCorrespondences(const std::vector<Correspondence> &matches, char* path
         exit(-1);
     }else{
         for(int i=0;i<matches.size();++i){
-            Correspondence match=matches.at(i);
+            Match match=matches.at(i);
             if(i==matches.size()-1)
                 fprintf(stream,"%f\t%f\t%f\t%f\t%f",
-                        match.p1.x,match.p1.y,match.dx,match.dy,match.corr);
+                        match.p1.x,match.p1.y,match.getParaX(),match.getParaY(),match.corr);
             else
                 fprintf(stream,"%f\t%f\t%f\t%f\t%f\n",
-                        match.p1.x,match.p1.y,match.dx,match.dy,match.corr);
+                        match.p1.x,match.p1.y,match.getParaX(),match.getParaY(),match.corr);
         }
     }
     fclose(stream);
@@ -74,7 +74,7 @@ void writeCorrespondences(const std::vector<Correspondence> &matches, char* path
 
 void performMatching(const cv::Mat& img1, const cv::Mat& img2,
                      const std::vector<cv::Point2f>& lpts, const std::vector<cv::Point2f>& rpts,
-                     const std::vector<Match>& seeds, std::vector<Correspondence>& matches,
+                     const std::vector<Match>& seeds, std::vector<Match>& matches,
                      int window_radius, int search_radius, double mcc_threshold){
     Delaunay tin(img1);
     std::vector<cv::Point2f> pts1,pts2;
@@ -86,7 +86,9 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     std::vector<std::vector<int> > list;
     tin.getTrilist(list);
     //    tin1.drawDelaunay(img1,image_scale);
-    showFeatureInsideTriangles(img1, lpts, tin, t2f1);
+    if(display_int_results==0)
+        showFeatureInsideTriangles(img1, lpts, tin, t2f1);
+//    std::vector<Match> matches;
     for(int i=0; i<t2f1.size(); ++i){
         //get features inside the triangle
         std::vector<int> pts_idx=t2f1[i];
@@ -108,17 +110,47 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
             cv::Rect contour;
             constructContour(dst, search_radius, contour);
             //find right-side features within the contour
+            Match candidate;
+            bool matched=false;
             std::vector<cv::Point2f> candidates;
+            int maxid=-1, num=-1;
             for(int k=0; k<rpts.size(); ++k){
                 cv::Point2f pt=rpts[k];
                 if(contour.contains(pt)){
-                    //calculate correlation coefficient
-
-                    //store the results
                     candidates.push_back(pt);
+                    num++;
+                    //calculate correlation coefficient
+                    cv::Mat src_patch, dst_patch;
+                    cv::Rect src_rect=cv::Rect(src.x-window_radius, src.y-window_radius*2, window_radius*2, window_radius*2);
+                    cv::Rect dst_rect=cv::Rect(pt.x-window_radius, pt.y-window_radius*2, window_radius*2, window_radius*2);
+                    if(isInRange(img1.size(), src_rect)){
+                        src_patch=img1(src_rect);
+                    }else{
+                        continue;
+                    }
+                    if(isInRange(img2.size(), dst_rect)){
+                        dst_patch=img2(dst_rect);
+                    }else{
+                        continue;
+                    }
+                    //create the correlation coefficient matrix
+                    cv::Mat ccMat(1,1,CV_64FC1);
+                    matchTemplate(src_patch,dst_patch,ccMat,cv::TM_CCOEFF_NORMED);
+                    double cc=ccMat.at<float>(0, 0);
+                    //store the correspondence candidate with max correlation coefficient
+                    if(candidate.corr<=cc){
+                        matched=true;//correspondence detected
+                        candidate.corr=cc;
+                        candidate.p1_id=pts_idx[j];
+                        candidate.p2_id=k;
+                        maxid=num;
+                    }
                 }
             }
-            showCandidates(img1,img2,src,dst,contour,candidates);
+            if(matched) matches.push_back(candidate);
+            if(display_int_results==0)
+                showCandidates(img1,img2,src,dst,contour,candidates, num);
+            cv::DMatch::
         }
     }
 }

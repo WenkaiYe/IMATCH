@@ -208,8 +208,7 @@ int main(int argc, char *argv[]){
 
     std::vector<cv::Point2f> pts1,pts2;
     std::vector<cv::KeyPoint> kpts1,kpts2;
-    std::vector<Correspondence> matches;
-    std::vector<Match> controls;
+    std::vector<Match> matches, controls;
 
     //************************ 1. generate points for matching ************************
     if(feature){
@@ -252,7 +251,7 @@ int main(int argc, char *argv[]){
         printf("%d points are extracted from the first image and %d points are extracted from the second image...\n",pts1.size(),pts2.size());
     }
 
-    if(feature && display_int_results/*need further modifications*/){
+    if(feature && display_int_results==0/*need further modifications*/){
         cv::Mat dst1=img1.clone();
         cv::Mat dst2=img2.clone();
         cv::drawKeypoints(img1,kpts1,dst1);

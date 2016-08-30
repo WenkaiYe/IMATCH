@@ -315,7 +315,7 @@ void calAffineParas(const std::vector<cv::Point2f> &pts1, const std::vector<cv::
 
 void showCandidates(const cv::Mat& img1, const cv::Mat& img2,
                     const cv::Point2f& src, const cv::Point2f& dst,
-                    const cv::Rect& contour, const std::vector<cv::Point2f>& pts){
+                    const cv::Rect& contour, const std::vector<cv::Point2f>& pts, const int maxid){
     cv::Mat left_img=img1.clone();
     if(left_img.type()==CV_8UC1){
         cv::cvtColor(left_img,left_img,CV_GRAY2RGB);
@@ -338,7 +338,10 @@ void showCandidates(const cv::Mat& img1, const cv::Mat& img2,
     cv::line(right_img,ll,ul,cv::Scalar(255,0,0),2);
     //draw candidates
     for(int i=0; i<pts.size(); ++i){
-        cv::circle(right_img, pts[i], 2, cv::Scalar(0,255,0),2);
+        if(i==maxid)
+            cv::circle(right_img, pts[i], 2, cv::Scalar(0, 0, 255), 3);
+        else
+            cv::circle(right_img, pts[i], 2, cv::Scalar(0, 255, 0), 2);
     }
     showImagepair(left_img,right_img);
 }

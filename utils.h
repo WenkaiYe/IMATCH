@@ -16,7 +16,7 @@
 
 //opencv
 #include "opencv2/opencv.hpp"
-
+extern int display_int_results;
 #define DEFAULT_WINDOW_NAME "test_window"
 #define MAX_LENGTH_OF_FILEPATH 100
 #define PAUSE printf("Press Enter key to continue..."); fgetc(stdin);
@@ -36,6 +36,8 @@ struct Match{
     double getParaX() const {return (double)(p1.x-p2.x);}
     double getParaY() const {return (double)(p1.y-p2.y);}
     cv::Point2f p1;
+    int p1_id;
+    int p2_id;
     cv::Point2f p2;
     int windowSize;
     double corr;
@@ -97,6 +99,6 @@ inline void affineTransform(const cv::Point2f& src, const std::vector<double>& p
     dst.y=b0+b1*src.x+b2*src.y;
 }
 void showCandidates(const cv::Mat& img1, const cv::Mat& img2, const cv::Point2f& src, const cv::Point2f& dst,
-                    const cv::Rect& contour, const std::vector<cv::Point2f>& pts);
+                    const cv::Rect& contour, const std::vector<cv::Point2f>& pts, const int maxid);
 
 #endif
