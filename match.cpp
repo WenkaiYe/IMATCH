@@ -82,16 +82,26 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     tin.generateDelaunay(pts1);
     std::vector<int> f2t1,f2t2;
     std::vector<std::vector<int> > t2f1,t2f2;
-    genFeature2TriangleTable(lpts,tin,f2t1,t2f1);
+    genFeature2TriangleTable(lpts, tin, f2t1, t2f1);
+    tin.resetTriPoints(pts2);
+    genFeature2TriangleTable(rpts, tin, f2t2, t2f2);
     std::vector<std::vector<int> > list;
     tin.getTrilist(list);
     //    tin1.drawDelaunay(img1,image_scale);
-    if(display_int_results==0)
+    if(display_int_results>1)
         showFeatureInsideTriangles(img1, lpts, tin, t2f1);
-//    std::vector<Match> matches;
-    for(int i=0; i<t2f1.size(); ++i){
+    std::vector<Match> matches12, matches21;
+    ftfMatchImpl(img1, img2, lpts, rpts, pts1, pts2, t2f1, list, matches12, window_radius, search_radius);
+//    ftfMatchImpl(img1, img2, lpts, rpts, pts1, pts2, t2f1, list, matches21, window_radius, search_radius);
+}
+
+void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2, const std::vector<cv::Point2f> &lpts, const std::vector<cv::Point2f> &rpts,
+                  std::vector<cv::Point2f> pts1, std::vector<cv::Point2f> pts2, std::vector<std::vector<int> > t2f, std::vector<std::vector<int> > list,
+                  std::vector<Match> &matches, int window_radius, int search_radius)
+{
+    for(int i=0; i<t2f.size(); ++i){
         //get features inside the triangle
-        std::vector<int> pts_idx=t2f1[i];
+        std::vector<int> pts_idx=t2f[i];
         //calculate transformation parameters
         std::vector<cv::Point2f> tri1, tri2;
         std::vector<double> paras;
@@ -106,7 +116,6 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
             dst.x=floor((double)dst.x);
             dst.y=floor((double)dst.y);
             //construct search contour
-//            std::vector<cv::Point2f> contour;
             cv::Rect contour;
             constructContour(dst, search_radius, contour);
             //find right-side features within the contour
@@ -148,9 +157,8 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
                 }
             }
             if(matched) matches.push_back(candidate);
-            if(display_int_results==0)
+            if(display_int_results>2)
                 showCandidates(img1,img2,src,dst,contour,candidates, num);
-            cv::DMatch::
         }
     }
 }
@@ -235,3 +243,6 @@ void constructContour(const cv::Point2f& center, const int searchRadius, cv::Rec
 //    contour.clear();
     contour=cv::Rect(ul.x, ul.y, 2*searchRadius, 2*searchRadius);
 }
+
+
+

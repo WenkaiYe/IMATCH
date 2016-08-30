@@ -32,6 +32,8 @@ public:
     void generateDelaunay(const std::vector<Match>& matches, int mode=0);
     //get the triangulation
     void getTriangulation(const std::vector<double>& attribute=std::vector<double>());
+    //set the triangulation
+    void resetTriPoints(const std::vector<cv::Point2f>& pts);
     //draw the triangulation
     void drawDelaunay(const cv::Mat& src, cv::Mat& dst, int tri_idx=-1, cv::Scalar delaunayColor=cv::Scalar(0,255,0)) const;
     //get the number of triangles contained in the triangulation

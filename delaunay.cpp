@@ -304,6 +304,13 @@ void Delaunay::getTriangulation(const std::vector<double> &attribute){
             }
 }
 
+void Delaunay::resetTriPoints(const std::vector<cv::Point2f>& pts){
+    assert(vertexes.size()==pts.size());
+//    std::vector<vertex>::iterator iter=vertexes.begin();
+    for(int i=0; i<pts.size(); ++i)
+        vertexes[i].pt=pts[i];
+}
+
 
 void locateCandidate(const std::vector<cv::Point2f>& tri1, const cv::Point2f pt1,
                      const std::vector<cv::Point2f>& tri2, cv::Point2f& pt2)

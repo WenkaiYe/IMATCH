@@ -7,7 +7,7 @@ char control_path[MAX_LENGTH_OF_FILEPATH];   /*control path*/
 char cur_dir[MAX_LENGTH_OF_FILEPATH];        /*current directory*/
 std::string img1_path;                       /*file paths of the stereo image pair*/
 std::string img2_path;
-int display_int_results=-1;                  /*show feature extraction results ?????*/
+int display_int_results=0;                  /*show feature extraction results ?????*/
 double image_scale=1.0;                      /*image scale for display*/
 //bool parallel=false;                         /*perform matching parallelly*/
 //bool histeq=false;                           /*perform histogram equalization*/
@@ -251,7 +251,7 @@ int main(int argc, char *argv[]){
         printf("%d points are extracted from the first image and %d points are extracted from the second image...\n",pts1.size(),pts2.size());
     }
 
-    if(feature && display_int_results==0/*need further modifications*/){
+    if(feature && display_int_results>0/*need further modifications*/){
         cv::Mat dst1=img1.clone();
         cv::Mat dst2=img2.clone();
         cv::drawKeypoints(img1,kpts1,dst1);
