@@ -1,7 +1,7 @@
 #include "utils.h"
 #include "match.h"
 //global variables and functions
-char* const short_options = "o:hvdfsc:a";/*?????*/
+char* const short_options = "o:hvd:fsc:a";/*?????*/
 char out_path[MAX_LENGTH_OF_FILEPATH];       /*output directory*/
 char control_path[MAX_LENGTH_OF_FILEPATH];   /*control path*/
 char cur_dir[MAX_LENGTH_OF_FILEPATH];        /*current directory*/
@@ -30,10 +30,9 @@ struct option long_options[] = {
 {"image-scale", 1, NULL, 'a'},
 {"show", 0, NULL, 's'},
 {"feature", 0, NULL, 'f'},
-//{ "histeq", 0, NULL, 'e' },
 { "out", 1, NULL, 'o' },
 { "version", 0, NULL, 'v' },
-{ "display", 0/*?????*/, NULL, 'd' },
+{ "display", 1, NULL, 'd' },
 { "help", 0, NULL, 'h' },
 //{ "parallel", 0, NULL, 'p' },
 { 0, 0, 0, 0},
@@ -98,17 +97,11 @@ void parse_args(int argc, char *argv[])
             print_usage();
             break;
         case 'd':
-            display_int_results=/*atoi(optarg)*/2;/*?????*/
+            display_int_results=atoi(optarg);
             break;
         case 'a':
             image_scale=atof(optarg);
             break;
-//        case 'e':
-//            histeq=true;
-//            break;
-//        case 'p':
-//            parallel=true;
-//            break;
         case 'f':
             feature=true;
             break;

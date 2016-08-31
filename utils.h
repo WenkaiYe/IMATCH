@@ -21,14 +21,20 @@ extern int display_int_results;
 #define MAX_LENGTH_OF_FILEPATH 100
 #define PAUSE printf("Press Enter key to continue..."); fgetc(stdin);
 
-typedef struct{
-    cv::Point2f p1;
-    cv::Point2f p2;
+struct Correspondence{
+//    cv::Point2f p1;
+//    cv::Point2f p2;
+    int p1_id;
+    int p2_id;
     double corr;
     int wsize;
     double dx;
     double dy;
-} Correspondence;
+    bool operator<(const Correspondence &c) const {
+       return p2_id<c.p2_id;
+    }
+
+};
 
 struct Match{
     Match(){}
@@ -36,8 +42,8 @@ struct Match{
     double getParaX() const {return (double)(p1.x-p2.x);}
     double getParaY() const {return (double)(p1.y-p2.y);}
     cv::Point2f p1;
-    int p1_id;
-    int p2_id;
+//    int p1_id;
+//    int p2_id;
     cv::Point2f p2;
     int windowSize;
     double corr;

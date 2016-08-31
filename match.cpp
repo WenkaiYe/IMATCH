@@ -80,34 +80,58 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     std::vector<cv::Point2f> pts1,pts2;
     getPtsFromMatches(seeds,pts1,pts2);
     tin.generateDelaunay(pts1);
-    std::vector<int> f2t1,f2t2;
+    std::vector<int> f2t1,f2t2; //not used below
     std::vector<std::vector<int> > t2f1,t2f2;
     genFeature2TriangleTable(lpts, tin, f2t1, t2f1);
     tin.resetTriPoints(pts2);
     genFeature2TriangleTable(rpts, tin, f2t2, t2f2);
-    std::vector<std::vector<int> > list;
+    std::vector<std::vector<int> > list; //point ids of vertexes of each triangle
     tin.getTrilist(list);
-    //    tin1.drawDelaunay(img1,image_scale);
-    if(display_int_results>1)
-        showFeatureInsideTriangles(img1, lpts, tin, t2f1);
-    std::vector<Match> matches12, matches21;
-    ftfMatchImpl(img1, img2, lpts, rpts, pts1, pts2, t2f1, list, matches12, window_radius, search_radius);
-//    ftfMatchImpl(img1, img2, lpts, rpts, pts1, pts2, t2f1, list, matches21, window_radius, search_radius);
-}
 
-void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2, const std::vector<cv::Point2f> &lpts, const std::vector<cv::Point2f> &rpts,
-                  std::vector<cv::Point2f> pts1, std::vector<cv::Point2f> pts2, std::vector<std::vector<int> > t2f, std::vector<std::vector<int> > list,
-                  std::vector<Match> &matches, int window_radius, int search_radius)
-{
-    for(int i=0; i<t2f.size(); ++i){
-        //get features inside the triangle
-        std::vector<int> pts_idx=t2f[i];
-        //calculate transformation parameters
+    //calculate the transformation parameters for each triangle
+    std::vector<std::vector<double> > affinePars;
+    std::vector<std::vector<double> > affinePars_inverse;
+    for(int i=0; i<list.size(); ++i){
         std::vector<cv::Point2f> tri1, tri2;
-        std::vector<double> paras;
+        std::vector<double> paras, paras_inverse;
         Delaunay::getTriVtxes(pts1, list[i], tri1);
         Delaunay::getTriVtxes(pts2, list[i], tri2);
         calAffineParas(tri1, tri2, paras);
+        calAffineParas(tri2, tri1, paras_inverse);
+        affinePars.push_back(paras);
+        affinePars_inverse.push_back(paras_inverse);
+    }
+
+    if(display_int_results<1)
+        showFeatureInsideTriangles(img1, lpts, tin, t2f1);
+
+    //symmetrical match
+    std::vector<Correspondence> matches12, matches21;
+    ftfMatchImpl(img1, img2, lpts, rpts, t2f1, affinePars, matches12, window_radius, search_radius, mcc_threshold);
+//    std::vector<cv::Point2f> tmp;
+//    for(int i=0; i<matches12.size(); ++i){
+
+//    }
+//    ftfMatchImpl(img2, img1, rpts, lpts, t2f2, affinePars_inverse, matches21, window_radius, search_radius, mcc_threshold);
+
+    //inverse consistency check
+    //for each left-to-right match
+    //if the corresponding right-to-left match matches, then leave
+    //otherwise, remove from the correspondences
+}
+
+void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2,
+                  const std::vector<cv::Point2f> &lpts, const std::vector<cv::Point2f> &rpts,
+                  std::vector<std::vector<int> > t2f, std::vector<std::vector<double> > affinePars,
+                  std::vector<Correspondence> &matches, int window_radius, int search_radius, double mcc_threshold)
+{
+    //for each triangle of the triangulation
+    for(int i=0; i<t2f.size(); ++i){
+        //get features inside the triangle
+        std::vector<int> pts_idx=t2f[i];
+        //get transformation parameters
+        std::vector<double> paras=affinePars[i];
+        //for each features within the triangle
         for(int j=0; j<pts_idx.size(); ++j){
             cv::Point2f src=lpts[pts_idx[j]];
             cv::Point2f dst;
@@ -119,10 +143,11 @@ void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2, const std::vector<cv
             cv::Rect contour;
             constructContour(dst, search_radius, contour);
             //find right-side features within the contour
-            Match candidate;
+            Correspondence candidate;
             bool matched=false;
             std::vector<cv::Point2f> candidates;
             int maxid=-1, num=-1;
+            //for each features on the other image
             for(int k=0; k<rpts.size(); ++k){
                 cv::Point2f pt=rpts[k];
                 if(contour.contains(pt)){
@@ -151,16 +176,28 @@ void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2, const std::vector<cv
                         matched=true;//correspondence detected
                         candidate.corr=cc;
                         candidate.p1_id=pts_idx[j];
-                        candidate.p2_id=k;
+                        candidate.p2_id=k;//only point ids recorded
+                        candidate.wsize=window_radius*2;
                         maxid=num;
                     }
                 }
             }
-            if(matched) matches.push_back(candidate);
-            if(display_int_results>2)
-                showCandidates(img1,img2,src,dst,contour,candidates, num);
+
+            if(matched && candidate.corr>=mcc_threshold) matches.push_back(candidate);
+
+            if(display_int_results<2)
+                showCandidates(img1, img2, src, dst, contour, candidates, num);
         }
     }
+
+    //deal with one-to-many situation
+    //sort correspondences - sort based on the right point id
+    sort(matches.begin(), matches.end()/*, less<Correspondence>()*/);
+    std::cout<<matches.size()<<std::endl;
+    for(int i=0; i<matches.size(); ++i)
+        std::cout<<matches[i].p2_id<<std::endl;
+    int aaa=1;
+    //leave the one with max correlation coefficient
 }
 
 void genFeature2TriangleTable(const std::vector<cv::Point2f> &features, const Delaunay& tris,
