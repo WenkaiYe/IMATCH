@@ -76,6 +76,7 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
                      const std::vector<cv::Point2f>& lpts, const std::vector<cv::Point2f>& rpts,
                      const std::vector<Match>& seeds, std::vector<Match>& matches,
                      int window_radius, int search_radius, double mcc_threshold){
+    matches.clear();
     Delaunay tin(img1);
     std::vector<cv::Point2f> pts1,pts2;
     getPtsFromMatches(seeds,pts1,pts2);
@@ -83,6 +84,10 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     std::vector<int> f2t1,f2t2; //not used below
     std::vector<std::vector<int> > t2f1,t2f2;
     genFeature2TriangleTable(lpts, tin, f2t1, t2f1);
+
+    if(display_int_results<1)
+        showFeatureInsideTriangles(img1, lpts, tin, t2f1);
+
     tin.resetTriPoints(pts2);
     genFeature2TriangleTable(rpts, tin, f2t2, t2f2);
     std::vector<std::vector<int> > list; //point ids of vertexes of each triangle
@@ -102,22 +107,36 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
         affinePars_inverse.push_back(paras_inverse);
     }
 
-    if(display_int_results<1)
-        showFeatureInsideTriangles(img1, lpts, tin, t2f1);
-
-    //symmetrical match
+    //symmetrically match
     std::vector<Correspondence> matches12, matches21;
     ftfMatchImpl(img1, img2, lpts, rpts, t2f1, affinePars, matches12, window_radius, search_radius, mcc_threshold);
+//    showCorrespondences(img1, img2, lpts, rpts, matches12);
+//    std::cout<<matches12.size()<<std::endl;
 //    std::vector<cv::Point2f> tmp;
 //    for(int i=0; i<matches12.size(); ++i){
-
+//        cv::Point2f pt=rpts[matches12[i].p2_id];
+//        tmp.push_back(pt);
 //    }
-//    ftfMatchImpl(img2, img1, rpts, lpts, t2f2, affinePars_inverse, matches21, window_radius, search_radius, mcc_threshold);
+    ftfMatchImpl(img2, img1, rpts, lpts, t2f2, affinePars_inverse, matches21, window_radius, search_radius, mcc_threshold);
+//    showCorrespondences(img2, img1, rpts, lpts, matches21);
+
+//    std::cout<<matches21.size()<<std::endl;
 
     //inverse consistency check
-    //for each left-to-right match
-    //if the corresponding right-to-left match matches, then leave
-    //otherwise, remove from the correspondences
+    std::vector<Correspondence> crpds;
+    inverseCheck(matches12, matches21, crpds);
+
+    //converse Correspondence to Match
+    for(int i=0; i<crpds.size(); ++i){
+        Match match;
+        match.corr=crpds[i].corr;
+        match.p1=lpts[crpds[i].p1_id];
+        match.p2=rpts[crpds[i].p2_id];
+        matches.push_back(match);
+    }
+
+    if(display_int_results<3)
+        showCorrespondences(img1, img2, lpts, rpts, crpds);
 }
 
 void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2,
@@ -125,6 +144,7 @@ void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2,
                   std::vector<std::vector<int> > t2f, std::vector<std::vector<double> > affinePars,
                   std::vector<Correspondence> &matches, int window_radius, int search_radius, double mcc_threshold)
 {
+    matches.clear();
     //for each triangle of the triangulation
     for(int i=0; i<t2f.size(); ++i){
         //get features inside the triangle
@@ -143,8 +163,9 @@ void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2,
             cv::Rect contour;
             constructContour(dst, search_radius, contour);
             //find right-side features within the contour
-            Correspondence candidate;
             bool matched=false;
+            Correspondence candidate;
+            candidate.corr=-1.0;
             std::vector<cv::Point2f> candidates;
             int maxid=-1, num=-1;
             //for each features on the other image
@@ -172,7 +193,7 @@ void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2,
                     matchTemplate(src_patch,dst_patch,ccMat,cv::TM_CCOEFF_NORMED);
                     double cc=ccMat.at<float>(0, 0);
                     //store the correspondence candidate with max correlation coefficient
-                    if(candidate.corr<=cc){
+                    if(candidate.corr<cc){
                         matched=true;//correspondence detected
                         candidate.corr=cc;
                         candidate.p1_id=pts_idx[j];
@@ -183,21 +204,16 @@ void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2,
                 }
             }
 
-            if(matched && candidate.corr>=mcc_threshold) matches.push_back(candidate);
-
             if(display_int_results<2)
-                showCandidates(img1, img2, src, dst, contour, candidates, num);
+                showCandidates(img1, img2, src, contour, candidates, maxid);
+
+            if(matched && candidate.corr>=mcc_threshold)
+                matches.push_back(candidate);
         }
     }
 
     //deal with one-to-many situation
-    //sort correspondences - sort based on the right point id
-    sort(matches.begin(), matches.end()/*, less<Correspondence>()*/);
-    std::cout<<matches.size()<<std::endl;
-    for(int i=0; i<matches.size(); ++i)
-        std::cout<<matches[i].p2_id<<std::endl;
-    int aaa=1;
-    //leave the one with max correlation coefficient
+    one2oneCheck(matches, matches);
 }
 
 void genFeature2TriangleTable(const std::vector<cv::Point2f> &features, const Delaunay& tris,
@@ -281,5 +297,55 @@ void constructContour(const cv::Point2f& center, const int searchRadius, cv::Rec
     contour=cv::Rect(ul.x, ul.y, 2*searchRadius, 2*searchRadius);
 }
 
+void one2oneCheck(const std::vector<Correspondence> &src, std::vector<Correspondence> &dst)
+{
+    std::vector<Correspondence> matches=src;
+    dst.clear();
+    //sort correspondences - sort based on the right point id
+    sort(matches.begin(), matches.end()/*, less<Correspondence>()*/);
 
+//    std::cout<<"********************"<<matches.size()<<"********************"<<std::endl;
+//    for(int i=0; i<matches.size(); ++i)
+//        std::cout<<matches[i].p1_id<<" - "<<matches[i].p2_id<<std::endl;
 
+    //leave the one with max correlation coefficient
+    for(int i=0; i<matches.size();){
+        std::vector<Correspondence> crpds;
+        int c=matches[i].p2_id;
+        //form the collection
+        while(c==matches[i].p2_id)
+            crpds.push_back(matches[i++]);
+        double max_cc=crpds[0].corr;
+        int idx=0;
+        //find the one with max correlation coefficient
+        for(int j=1; j<crpds.size(); ++j){
+            if(max_cc<crpds[j].corr){
+                idx=j;
+                max_cc=crpds[j].corr;
+            }
+        }
+        Correspondence match=crpds[idx];
+        dst.push_back(match);
+    }
+
+//    std::cout<<"********************"<<dst.size()<<"********************"<<std::endl;
+//    for(int i=0; i<dst.size(); ++i)
+//        std::cout<<dst[i].p1_id<<" - "<<dst[i].p2_id<<std::endl;
+}
+
+void inverseCheck(const std::vector<Correspondence> &matches12, const std::vector<Correspondence> &matches21, std::vector<Correspondence> &matches){
+    matches.clear();
+    //for each left-to-right match
+    //if the corresponding right-to-left match matches, then leave
+    //otherwise, remove from the correspondences
+    for(int i=0; i<matches12.size(); ++i){
+        Correspondence m=matches12[i];
+        for(int j=0; j<matches21.size(); ++j){
+            if(matches21[j].p1_id==m.p2_id && matches21[j].p2_id==m.p1_id)
+                matches.push_back(m);
+        }
+    }
+    printf("%d candidates were detected by left-to-right matching...\n", matches12.size());
+    printf("%d candidates were detected by right-to-left matching...\n", matches21.size());
+    printf("%d correspondences were matched finally...\n", matches.size());
+}

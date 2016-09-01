@@ -314,7 +314,7 @@ void calAffineParas(const std::vector<cv::Point2f> &pts1, const std::vector<cv::
 //inline void affineTransform(const cv::Point2f& src, const std::vector<double>& paras, cv::Point2f& dst)
 
 void showCandidates(const cv::Mat& img1, const cv::Mat& img2,
-                    const cv::Point2f& src, const cv::Point2f& dst,
+                    const cv::Point2f& src, /*const cv::Point2f& dst,*/
                     const cv::Rect& contour, const std::vector<cv::Point2f>& pts, const int maxid){
     cv::Mat left_img=img1.clone();
     if(left_img.type()==CV_8UC1){
@@ -344,4 +344,29 @@ void showCandidates(const cv::Mat& img1, const cv::Mat& img2,
             cv::circle(right_img, pts[i], 2, cv::Scalar(0, 255, 0), 2);
     }
     showImagepair(left_img,right_img);
+}
+
+void showCorrespondences(const cv::Mat &img1, const cv::Mat &img2, const std::vector<cv::Point2f> &pts1, const std::vector<cv::Point2f> &pts2, const std::vector<Correspondence> &matches)
+{
+    std::vector<cv::KeyPoint> kpts1, kpts2;
+    Point2f2KeyPoint(pts1, kpts1);
+    Point2f2KeyPoint(pts2, kpts2);
+    std::vector<std::vector<cv::DMatch> > dmatches;
+    Crpd2VDMatch(matches, dmatches);
+    cv::Mat dst;
+    cv::drawMatches(img1, kpts1, img2, kpts2, dmatches, dst);
+    showImage(dst, "test", image_scale);
+}
+
+void Crpd2VDMatch(const std::vector<Correspondence> &crpd, std::vector<std::vector<cv::DMatch> > &dmatch)
+{
+    dmatch.clear();
+    for(int i=0; i<crpd.size(); ++i){
+        std::vector<cv::DMatch> matches;
+        cv::DMatch match;
+        match.queryIdx=crpd[i].p1_id;
+        match.trainIdx=crpd[i].p2_id;
+        matches.push_back(match);
+        dmatch.push_back(matches);
+    }
 }

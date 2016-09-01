@@ -17,6 +17,7 @@
 //opencv
 #include "opencv2/opencv.hpp"
 extern int display_int_results;
+extern double image_scale;
 #define DEFAULT_WINDOW_NAME "test_window"
 #define MAX_LENGTH_OF_FILEPATH 100
 #define PAUSE printf("Press Enter key to continue..."); fgetc(stdin);
@@ -33,7 +34,6 @@ struct Correspondence{
     bool operator<(const Correspondence &c) const {
        return p2_id<c.p2_id;
     }
-
 };
 
 struct Match{
@@ -85,12 +85,14 @@ void Point2f2KeyPoint(const std::vector<cv::Point2f>& src, std::vector<cv::KeyPo
 void trimString(std::string &str);
 bool str2bool(std::string s);
 void lowerString(std::string &str);
-
+void Crpd2VDMatch(const std::vector<Correspondence> &crpd, std::vector<std::vector<cv::DMatch> > &dmatch);
 void getPtsFromMatches(const std::vector<Match>& matches,std::vector<cv::Point2f>& lpts,std::vector<cv::Point2f>& rpts);
 void readMatches(const std::string filename,std::vector<Match>& matches,bool withTitle=false,bool withCC=false, bool withWindowSize=false,
                  bool withArcgisCoor=false,bool withParaXY=false);
 void showImage(const cv::Mat &img,std::string title=DEFAULT_WINDOW_NAME,double scale=1.0);
 void showImagepair(const cv::Mat& img1,const cv::Mat& img2,std::string title=DEFAULT_WINDOW_NAME,double scale=1.0);
+void showCorrespondences(const cv::Mat &img1, const cv::Mat &img2, const std::vector<cv::Point2f> &pts1,
+                 const std::vector<cv::Point2f> &pts2, const std::vector<Correspondence> &matches);
 void showMulImages(const std::vector<cv::Mat>& srcImgs, cv::Size SubPlot, cv::Size ImgMax_Size,const std::string title=DEFAULT_WINDOW_NAME);
 void printKeypoints(std::string filename,const std::vector<cv::KeyPoint>& kpts, bool display=false);
 void printKeypoints(std::string filename,const std::vector<cv::Point2f>& kpts, bool display=false);
@@ -104,7 +106,7 @@ inline void affineTransform(const cv::Point2f& src, const std::vector<double>& p
     dst.x=a0+a1*src.x+a2*src.y;
     dst.y=b0+b1*src.x+b2*src.y;
 }
-void showCandidates(const cv::Mat& img1, const cv::Mat& img2, const cv::Point2f& src, const cv::Point2f& dst,
+void showCandidates(const cv::Mat& img1, const cv::Mat& img2, const cv::Point2f& src, /*const cv::Point2f& dst,*/
                     const cv::Rect& contour, const std::vector<cv::Point2f>& pts, const int maxid);
 
 #endif

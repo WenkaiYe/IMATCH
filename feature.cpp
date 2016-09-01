@@ -85,8 +85,8 @@ bool extractFeatures(const cv::Mat& img, std::vector<cv::KeyPoint>& kpts){
 //            /*GoodFeaturesToTrackDetector( int maxCorners, double qualityLevel,
 //            double minDistance, int blockSize=3,bool useHarrisDetector=false, double k=0.04 );*/
 //            //initialize the parameters
-            int maxCorners=1e8,blockSize=10;
-            double qualityLevel=0.01,minDistance=15,k=0.04;
+            int maxCorners=1e8,blockSize=5;
+            double qualityLevel=0.01,minDistance=5,k=0.04;
             bool useHarrisDEtector=false;
 //            //set parameters
 //            readConfigFile(filename,"maxCorners",maxCorners);
