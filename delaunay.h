@@ -35,7 +35,7 @@ public:
     //set the triangulation
     void resetTriPoints(const std::vector<cv::Point2f>& pts);
     //draw the triangulation
-    void drawDelaunay(const cv::Mat& src, cv::Mat& dst, int tri_idx=-1, cv::Scalar delaunayColor=cv::Scalar(0,255,0)) const;
+    void drawDelaunay(const cv::Mat& src, cv::Mat& dst, int tri_idx=-1, cv::Scalar delaunayColor=cv::Scalar(255,0,0)) const;
     //get the number of triangles contained in the triangulation
     int getNumberOfTri() const {return triangulation.size();}
     //check if the point is inside the certain triangle

@@ -1,0 +1,30 @@
+#============================================================================#
+#**************************CONFIGURATION FOR TJ TO RUN************************
+#============================================================================#
+
+### available feature types:
+#	1)good feature;	2)fast feature; 
+#	3)grid feature;	4) ;
+#	5);	6);
+#	7);	8);
+#	9);	10);
+
+#********* (1) parameters of the good feature algorithm*********
+maxCorners=100000000
+qualityLevel=0.001
+minDistance=5
+blockSize=5
+useHarrisDetector=false
+k=0.04
+
+#*********parameters of the Fast algorithm*********
+#threshold=50;
+#nonmaxSuppression=true;
+#*********parameters of the grid feature algorithm*********
+#initFeatureScale=1f
+#featureScaleMul=0.1f
+#featureScaleLevels=1
+#initXyStep=5
+#initImgBound=0
+#varyXyStepWithScale=true
+#varyImgBoundWithScale=false

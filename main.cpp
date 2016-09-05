@@ -1,17 +1,18 @@
 #include "utils.h"
 #include "match.h"
 //global variables and functions
-char* const short_options = "o:hvd:fsc:a";/*?????*/
+char* const short_options = "o:hvd:f:sc:a";/*?????*/
 char out_path[MAX_LENGTH_OF_FILEPATH];       /*output directory*/
+char feature_config_path[MAX_LENGTH_OF_FILEPATH];       /*feature configuration directory*/
 char control_path[MAX_LENGTH_OF_FILEPATH];   /*control path*/
 char cur_dir[MAX_LENGTH_OF_FILEPATH];        /*current directory*/
 std::string img1_path;                       /*file paths of the stereo image pair*/
 std::string img2_path;
 int display_int_results=-1;                  /*show feature extraction results ?????*/
 double image_scale=1.0;                      /*image scale for display*/
-//bool parallel=false;                         /*perform matching parallelly*/
-//bool histeq=false;                           /*perform histogram equalization*/
-bool feature=false;                          /*extract features instead of grid points*/
+//bool parallel=false;                       /*perform matching parallelly*/
+//bool histeq=false;                         /*perform histogram equalization*/
+int feature=0;                               /*extract features instead of grid points*/
 bool show_parameters=false;                  /*show matching arguments*/
 int mode_flag=0;                             /*0:grid; other:feature*/
 int window_radius=8;                         /*window size*/
@@ -22,14 +23,14 @@ int shift_y=0;                               /*y shift of the first grid point*/
 std::string xshift_path="0";
 std::string yshift_path="0";
 double cor_coe=0.8;                          /*correlation coefficient threshold*/
-float version_id=2.0;                        /*version information*/
-std::string version_Date="2016-08-14";
+float version_id=2.1;                        /*version information*/
+std::string version_Date="2016-09-04";
 
 struct option long_options[] = {
 {"control", 1, NULL, 'c'},
 {"image-scale", 1, NULL, 'a'},
 {"show", 0, NULL, 's'},
-{"feature", 0, NULL, 'f'},
+{"feature", 1, NULL, 'f'},
 { "out", 1, NULL, 'o' },
 { "version", 0, NULL, 'v' },
 { "display", 1, NULL, 'd' },
@@ -59,11 +60,14 @@ void print_usage(){
 //    printf("============================================================\n");
 }
 
-void getCurrentdir(){
-    getcwd(cur_dir,MAX_LENGTH_OF_FILEPATH);
-    strcat(cur_dir,"/");
-    strcpy(out_path,cur_dir);
-    strcat(out_path,"out.txt");
+void initCurrentdir(){
+    getcwd(cur_dir, MAX_LENGTH_OF_FILEPATH);
+    strcat(cur_dir, "/");
+    strcpy(out_path, cur_dir);
+    strcat(out_path, OUT_FILEPATH);
+
+    strcpy(feature_config_path, cur_dir);
+    strcat(out_path, FEATURE_CONFIG);
 }
 
 void getFilepath(char filepath[]){
@@ -103,7 +107,7 @@ void parse_args(int argc, char *argv[])
             image_scale=atof(optarg);
             break;
         case 'f':
-            feature=true;
+            feature=atoi(optarg);
             break;
         case 's':
             show_parameters=true;
@@ -176,7 +180,7 @@ int is_digit(const std::string str){
 
 int main(int argc, char *argv[]){
     //get current directory
-    getCurrentdir();
+    initCurrentdir();
     //parse commandline arguments
     parse_args(argc,argv);
     //not perform matching
@@ -207,10 +211,10 @@ int main(int argc, char *argv[]){
     if(feature){
         //feature extraction
         printf("Perform feature extraction...\n");
-        extractFeatures(img1,kpts1);
-        KeyPoint2Point2f(kpts1,pts1);
-        extractFeatures(img2,kpts2);
-        KeyPoint2Point2f(kpts2,pts2);
+        extractFeatures(img1, kpts1, (FeatureType)feature);
+        KeyPoint2Point2f(kpts1, pts1);
+        extractFeatures(img2, kpts2, (FeatureType)feature);
+        KeyPoint2Point2f(kpts2, pts2);
         printf("%d features are extracted from the first image and %d features are extracted from the second image...\n",pts1.size(),pts2.size());
     }else{
         //grid point generation according to the shift-type

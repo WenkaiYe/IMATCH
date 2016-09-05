@@ -21,6 +21,12 @@ extern double image_scale;
 #define DEFAULT_WINDOW_NAME "test_window"
 #define MAX_LENGTH_OF_FILEPATH 100
 #define PAUSE printf("Press Enter key to continue..."); fgetc(stdin);
+#define FEATURE_CONFIG ".featureconfig"
+#define OUT_FILEPATH "out.txt"
+
+enum FeatureType{
+    GoodFeature=1, FastFeature, StarFeature, SIFT, SURF, ORB,
+    BRISK, MSER, DenseFeatureDetector, SimpleBlobDetector};
 
 struct Correspondence{
 //    cv::Point2f p1;
@@ -75,11 +81,11 @@ struct Match{
     }
 };
 
-//bool readConfigFile(const char *cfgfilepath, const std::string &key, std::string &value);
-//bool readConfigFile(const char *cfgfilepath, const std::string &key, int &value);
-//bool readConfigFile(const char *cfgfilepath, const std::string &key, double &value);
-//bool readConfigFile(const char *cfgfilepath, const std::string &key, float &value);
-//bool readConfigFile(const char *cfgfilepath, const std::string &key, bool &value);
+bool readConfigFile(const char *cfgfilepath, const std::string &key, std::string &value);
+bool readConfigFile(const char *cfgfilepath, const std::string &key, int &value);
+bool readConfigFile(const char *cfgfilepath, const std::string &key, double &value);
+bool readConfigFile(const char *cfgfilepath, const std::string &key, float &value);
+bool readConfigFile(const char *cfgfilepath, const std::string &key, bool &value);
 void KeyPoint2Point2f(const std::vector<cv::KeyPoint>& src, std::vector<cv::Point2f>& dst);
 void Point2f2KeyPoint(const std::vector<cv::Point2f>& src, std::vector<cv::KeyPoint>& dst);
 void trimString(std::string &str);

@@ -22,7 +22,8 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
 void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2,
                   const std::vector<cv::Point2f> &lpts, const std::vector<cv::Point2f> &rpts,
                   std::vector<std::vector<int> > t2f, std::vector<std::vector<double> > affinePars,
-                  std::vector<Correspondence> &matches,  int window_radius=8, int search_radius=10, double mcc_threshold=0.8);
+                  std::vector<Correspondence> &matches,  int window_radius=8, int search_radius=10, double mcc_threshold=0.8,
+                  const cv::Mat &img1_del=cv::Mat(), const cv::Mat &img2_del=cv::Mat());
 
 void writeCorrespondences(const std::vector<Match>& matches,char* path);
 

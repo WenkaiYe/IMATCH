@@ -1,67 +1,67 @@
 #include "utils.h"
 
-//bool readConfigFile(const char *cfgfilepath, const std::string &key, std::string &value){
-//    /*
-//     * parameter:
-//                 cfgfilepath - configuration file path
-//                         key - variable name in the configuration file
-//                       value - value that corresponds to the key
-//    */
-//    std::fstream cfgFile;
-//    cfgFile.open(cfgfilepath);
-//    if(!cfgFile.is_open()){
-//        std::cerr<<"Error happened while loading the configuration file!"<<std::endl<<std::endl;
-//        return 0;
-//    }
-//    std::string line;
-//    while(!cfgFile.eof()){
-//        std::getline(cfgFile,line,'\n');
-//        trimString(line);
-//        if(line[0]=='#' || line.length()==0)
-//            //
-//            continue;
-//        else{
-//            size_t pos=line.find('=');
-//            if(pos==std::string::npos){
-//                std::cerr<<"Error happened while reading the configuration file!"<<std::endl;
-//                cfgFile.close();
-//                return 0;
-//            }
-//            std::string tmpKey=line.substr(0,pos);
-//            if(key==tmpKey){
-//                value=line.substr(pos+1);
-//                cfgFile.close();
-//                return 1;
-//            }
-//        }
-//    }
-//    cfgFile.close();
-//    return 0;
-//}
-//bool readConfigFile(const char *cfgfilepath, const std::string &key, int &value){
-//    std::string strtmp;
-//    bool b=readConfigFile(cfgfilepath,key,strtmp);
-//    if(b) value=atoi(strtmp.c_str());
-//    return b;
-//}
-//bool readConfigFile(const char *cfgfilepath, const std::string &key, double &value){
-//    std::string strtmp;
-//    bool b=readConfigFile(cfgfilepath,key,strtmp);
-//    if(b) value=atof(strtmp.c_str());
-//    return b;
-//}
-//bool readConfigFile(const char *cfgfilepath, const std::string &key, float &value){
-//    double tmp=value;
-//    bool b=readConfigFile(cfgfilepath,key,tmp);
-//    if(b) value=(float)tmp;
-//    return b;
-//}
-//bool readConfigFile(const char *cfgfilepath, const std::string &key, bool &value){
-//    std::string strtmp;
-//    bool b=readConfigFile(cfgfilepath,key,strtmp);
-//    if(b) value=str2bool(strtmp);
-//    return b;
-//}
+bool readConfigFile(const char *cfgfilepath, const std::string &key, std::string &value){
+    /*
+     * parameter:
+                 cfgfilepath - configuration file path
+                         key - variable name in the configuration file
+                       value - value that corresponds to the key
+    */
+    std::fstream cfgFile;
+    cfgFile.open(cfgfilepath);
+    if(!cfgFile.is_open()){
+        std::cerr<<"Error happened while loading the configuration file!"<<std::endl<<std::endl;
+        return 0;
+    }
+    std::string line;
+    while(!cfgFile.eof()){
+        std::getline(cfgFile,line,'\n');
+        trimString(line);
+        if(line[0]=='#' || line.length()==0)
+            //
+            continue;
+        else{
+            size_t pos=line.find('=');
+            if(pos==std::string::npos){
+                std::cerr<<"Error happened while reading the configuration file!"<<std::endl;
+                cfgFile.close();
+                return 0;
+            }
+            std::string tmpKey=line.substr(0,pos);
+            if(key==tmpKey){
+                value=line.substr(pos+1);
+                cfgFile.close();
+                return 1;
+            }
+        }
+    }
+    cfgFile.close();
+    return 0;
+}
+bool readConfigFile(const char *cfgfilepath, const std::string &key, int &value){
+    std::string strtmp;
+    bool b=readConfigFile(cfgfilepath,key,strtmp);
+    if(b) value=atoi(strtmp.c_str());
+    return b;
+}
+bool readConfigFile(const char *cfgfilepath, const std::string &key, double &value){
+    std::string strtmp;
+    bool b=readConfigFile(cfgfilepath,key,strtmp);
+    if(b) value=atof(strtmp.c_str());
+    return b;
+}
+bool readConfigFile(const char *cfgfilepath, const std::string &key, float &value){
+    double tmp=value;
+    bool b=readConfigFile(cfgfilepath,key,tmp);
+    if(b) value=(float)tmp;
+    return b;
+}
+bool readConfigFile(const char *cfgfilepath, const std::string &key, bool &value){
+    std::string strtmp;
+    bool b=readConfigFile(cfgfilepath,key,strtmp);
+    if(b) value=str2bool(strtmp);
+    return b;
+}
 
 void trimString(std::string &str){
     int s=str.find_first_not_of(" ");
@@ -332,16 +332,16 @@ void showCandidates(const cv::Mat& img1, const cv::Mat& img2,
     ur=cv::Point2f(contour.x+contour.width, contour.y);
     ll=cv::Point2f(contour.x, contour.y+contour.height);
     lr=cv::Point2f(contour.x+contour.width, contour.y+contour.height);
-    cv::line(right_img,ul,ur,cv::Scalar(255,0,0),2);
-    cv::line(right_img,ur,lr,cv::Scalar(255,0,0),2);
-    cv::line(right_img,lr,ll,cv::Scalar(255,0,0),2);
-    cv::line(right_img,ll,ul,cv::Scalar(255,0,0),2);
+    cv::line(right_img,ul,ur,cv::Scalar(0,255,0),2);
+    cv::line(right_img,ur,lr,cv::Scalar(0,255,0),2);
+    cv::line(right_img,lr,ll,cv::Scalar(0,255,0),2);
+    cv::line(right_img,ll,ul,cv::Scalar(0,255,0),2);
     //draw candidates
     for(int i=0; i<pts.size(); ++i){
         if(i==maxid)
-            cv::circle(right_img, pts[i], 2, cv::Scalar(0, 0, 255), 3);
+            cv::circle(right_img, pts[i], 2, cv::Scalar(0, 0, 255), 2);
         else
-            cv::circle(right_img, pts[i], 2, cv::Scalar(0, 255, 0), 2);
+            cv::circle(right_img, pts[i], 2, cv::Scalar(0, 255, 255), 2);
     }
     showImagepair(left_img,right_img);
 }
@@ -354,7 +354,8 @@ void showCorrespondences(const cv::Mat &img1, const cv::Mat &img2, const std::ve
     std::vector<std::vector<cv::DMatch> > dmatches;
     Crpd2VDMatch(matches, dmatches);
     cv::Mat dst;
-    cv::drawMatches(img1, kpts1, img2, kpts2, dmatches, dst);
+    cv::drawMatches(img1, kpts1, img2, kpts2, dmatches, dst, cv::Scalar::all(-1), cv::Scalar::all(-1), std::vector<std::vector<char> >(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+    cv::resize(dst, dst, cv::Size((int)(dst.cols*image_scale), (int)(dst.rows*image_scale)));
     showImage(dst, "test", image_scale);
 }
 
