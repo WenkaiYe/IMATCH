@@ -25,8 +25,7 @@ extern double image_scale;
 #define OUT_FILEPATH "out.txt"
 
 enum FeatureType{
-    GoodFeature=1, FastFeature, StarFeature, SIFT, SURF, ORB,
-    BRISK, MSER, DenseFeatureDetector, SimpleBlobDetector};
+    GoodFeature=1, FastFeature, SIFT, ORB, BRISK, MSER,};
 
 struct Correspondence{
 //    cv::Point2f p1;

@@ -9,7 +9,7 @@
 #	7);	8);
 #	9);	10);
 
-#********* (1) parameters of the good feature algorithm*********
+#********* (1) parameters of the good feature algorithm *********
 maxCorners=100000000
 qualityLevel=0.001
 minDistance=5
@@ -17,14 +17,31 @@ blockSize=5
 useHarrisDetector=false
 k=0.04
 
-#*********parameters of the Fast algorithm*********
-#threshold=50;
-#nonmaxSuppression=true;
-#*********parameters of the grid feature algorithm*********
-#initFeatureScale=1f
-#featureScaleMul=0.1f
-#featureScaleLevels=1
-#initXyStep=5
-#initImgBound=0
-#varyXyStepWithScale=true
-#varyImgBoundWithScale=false
+#********* (2) parameters of the Fast algorithm *********
+threshold=1;
+nonmaxSuppression=true;
+
+#********* (4) parameters of the ROB feature algorithm*********
+nfeatures=100000000
+nlevels=8
+edgeThreshold=31
+firstLevel=0
+WTA_K=2
+patchSize=31
+scaleFactor=1.2f
+
+#********* (5) parameters of the BRISK feature algorithm*********
+thresh=30
+octaves=3
+patternScale=1.0
+
+#********* (6) parameters of the MSER feature algorithm*********
+_delta=5
+_min_area=60
+_max_area=14400
+_max_evolution=200
+_edge_blur_size=5
+_max_variation=0.25
+_min_diversity=.2
+_area_threshold=1.01
+_min_margin=0.003

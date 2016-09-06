@@ -67,7 +67,7 @@ void initCurrentdir(){
     strcat(out_path, OUT_FILEPATH);
 
     strcpy(feature_config_path, cur_dir);
-    strcat(out_path, FEATURE_CONFIG);
+    strcat(feature_config_path, FEATURE_CONFIG);
 }
 
 void getFilepath(char filepath[]){
@@ -272,7 +272,7 @@ int main(int argc, char *argv[]){
             performMatching(img1,img2,pts1,pts2,controls,matches,window_radius,search_radius,cor_coe);
         else
             //control+grid points
-            /*performMatching(img1,img2,pts1,pts2,matches,window_radius,search_radius,cor_coe)*/;
+            performMatching(img1,img2,pts1,controls,matches,window_radius,search_radius,cor_coe);
     }else{
         //no control for matching available
         if(feature)

@@ -3,7 +3,7 @@
 void performMatching(const cv::Mat& img1, const cv::Mat& img2,
                      const std::vector<cv::Point2f>& lpts, const std::vector<cv::Point2f>& rpts,
                      std::vector<Match>& matches,
-                     int window_radius, int search_radius, double mcc_threshold)
+                     const int window_radius, const int search_radius, const double mcc_threshold)
 {
     matches.clear();
     assert(window_radius>0);
@@ -75,7 +75,7 @@ void writeCorrespondences(const std::vector<Match> &matches, char* path)
 void performMatching(const cv::Mat& img1, const cv::Mat& img2,
                      const std::vector<cv::Point2f>& lpts, const std::vector<cv::Point2f>& rpts,
                      const std::vector<Match>& seeds, std::vector<Match>& matches,
-                     int window_radius, int search_radius, double mcc_threshold){
+                     const int window_radius, const int search_radius, const double mcc_threshold){
     matches.clear();
     cv::Mat img1_fea, img2_fea;
     std::vector<cv::KeyPoint> kpts1, kpts2;
@@ -153,7 +153,7 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
 void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2,
                   const std::vector<cv::Point2f> &lpts, const std::vector<cv::Point2f> &rpts,
                   std::vector<std::vector<int> > t2f, std::vector<std::vector<double> > affinePars,
-                  std::vector<Correspondence> &matches, int window_radius, int search_radius, double mcc_threshold,
+                  std::vector<Correspondence> &matches, const int window_radius, const int search_radius, const double mcc_threshold,
                   const cv::Mat &img1_del, const cv::Mat &img2_del)
 {
     matches.clear();
@@ -360,4 +360,80 @@ void inverseCheck(const std::vector<Correspondence> &matches12, const std::vecto
     printf("%d candidates were detected by left-to-right matching...\n", matches12.size());
     printf("%d candidates were detected by right-to-left matching...\n", matches21.size());
     printf("%d correspondences were matched finally...\n", matches.size());
+}
+
+
+void performMatching(const cv::Mat &img1, const cv::Mat &img2, const std::vector<cv::Point2f> &gridpoints,
+                     const std::vector<Match> &seeds, std::vector<Match> &matches,
+                     int window_radius, int search_radius, double mcc_threshold)
+{
+    matches.clear();
+    Delaunay tin(img1);
+    std::vector<cv::Point2f> pts1,pts2;
+    getPtsFromMatches(seeds,pts1,pts2);
+    tin.generateDelaunay(pts1);
+    std::vector<int> f2t1,f2t2; //not used below
+    std::vector<std::vector<int> > t2f;
+    genFeature2TriangleTable(gridpoints, tin, f2t1, t2f);
+    cv::Mat img1_del, img2_del;
+    tin.drawDelaunay(img1, img1_del);
+
+//    if(display_int_results<1)
+//        showFeatureInsideTriangles(img1, gridpoints, tin, t2f1);
+
+    tin.resetTriPoints(pts2);
+    tin.drawDelaunay(img2, img2_del);
+    std::vector<std::vector<int> > list; //point ids of vertexes of each triangle
+    tin.getTrilist(list);
+
+    //calculate the transformation parameters for each triangle
+    std::vector<std::vector<double> > affinePars;
+    for(int i=0; i<list.size(); ++i){
+        std::vector<cv::Point2f> tri1, tri2;
+        std::vector<double> paras;
+        Delaunay::getTriVtxes(pts1, list[i], tri1);
+        Delaunay::getTriVtxes(pts2, list[i], tri2);
+        calAffineParas(tri1, tri2, paras);
+        affinePars.push_back(paras);
+    }
+
+    //generate the candidate points
+    std::vector<cv::Point2f> lpts, rpts;
+    for(int i=0; i<t2f.size(); ++i){
+        //get grid points inside the triangle
+        std::vector<int> pts_idx=t2f[i];
+        //get transformation parameters
+        std::vector<double> paras=affinePars[i];
+        for(int j=0; j<pts_idx.size(); ++j){
+//            cv::Mat img1_dst=img1_del.clone();
+//            cv::Mat img2_dst=img2_del.clone();
+            cv::Point2f leftpt=gridpoints[pts_idx[j]];
+            cv::Point2f rightpt;
+            affineTransform(leftpt, paras, rightpt);
+            lpts.push_back(leftpt);
+            rpts.push_back(rightpt);
+//            cv::circle(img1_dst, leftpt, 3, cv::Scalar(0, 0, 255), 2);
+//            cv::circle(img2_dst, rightpt, 3, cv::Scalar(0, 255, 0), 2);
+//            showImagepair(img1_dst, img2_dst, "test", image_scale);
+        }
+    }
+
+
+
+    performMatching(img1, img2, lpts, rpts, matches, window_radius, search_radius, mcc_threshold);
+    //inverse consistency check
+//    std::vector<Correspondence> crpds;
+//    inverseCheck(matches12, matches21, crpds);
+
+//    //converse Correspondence to Match
+//    for(int i=0; i<crpds.size(); ++i){
+//        Match match;
+//        match.corr=crpds[i].corr;
+//        match.p1=lpts[crpds[i].p1_id];
+//        match.p2=rpts[crpds[i].p2_id];
+//        matches.push_back(match);
+//    }
+
+//    if(display_int_results<3)
+//        showCorrespondences(img1, img2, lpts, rpts, crpds);
 }

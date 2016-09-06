@@ -69,80 +69,50 @@ bool extractFeatures(const cv::Mat& img, std::vector<cv::KeyPoint>& kpts, Featur
     //set detector
     switch(ftype)
     {
-        case GoodFeature:
-        {//Good feature to track
-            //initialize the default parameters
-            int maxCorners=1e8,blockSize=5;
-            double qualityLevel=0.001,minDistance=5,k=0.04;
-            bool useHarrisDEtector=false;
-            //set parameters
-            readConfigFile(FEATURE_CONFIG,"maxCorners",maxCorners);
-            readConfigFile(FEATURE_CONFIG,"blockSize",blockSize);
-            readConfigFile(FEATURE_CONFIG,"qualityLevel",qualityLevel);
-            readConfigFile(FEATURE_CONFIG,"minDistance",minDistance);
-            readConfigFile(FEATURE_CONFIG,"k",k);
-            readConfigFile(FEATURE_CONFIG,"useHarrisDetector",useHarrisDEtector);
-            //initialize feature detector
-            detector=new cv::GoodFeaturesToTrackDetector(maxCorners,qualityLevel,minDistance,blockSize,useHarrisDEtector,k);
-            //detect
-            detector->detect(img,kpts);
-            break;
-        }
-        case FastFeature:
-        {//Fast feature detector
-             int threshold=10;
-             bool nonmaxSuppression=true;
-             //set parameters
-             readConfigFile(FEATURE_CONFIG,"threshold", threshold);
-             readConfigFile(FEATURE_CONFIG,"nonmaxSuppression", nonmaxSuppression);
-             //initialize feature detector
-            detector=new cv::FastFeatureDetector(threshold, nonmaxSuppression);
-            //detect
-            detector->detect(img,kpts);
-            break;
-        }
-        case SiftFeature:
-        {//Sift feature
-//            cout<<"Feature Extraction:\tFast feature to track..."<<endl<<endl;
-//            /*  FastFeatureDetector(int threshold=10,bool nonmaxSuppression=true)*/
-//            //initialize the parameters
-//            int threshold=1;
-//            bool nonmaxSuppression=true;
-//            //set parameters
-//            readConfigFile(filename,"threshold",threshold);
-//            readConfigFile(filename,"nonmaxSuppression",nonmaxSuppression);
-//            //initialize feature detector
-//            detector=new FastFeatureDetector(threshold, nonmaxSuppression);
-//            //detect
-//            if(ImageID=="left")
-//                detector->detect(img1,keypoints);
-//            else if(ImageID=="right")
-//                detector->detect(img2,keypoints);
-//            else{
-//                detector->detect(img1,keypoints);
-//                cerr<<"Unknown option for the image_id, the left image was detected instead!"<<endl;
-//            }
-            break;
-        }
-        //        case GridFeature:
-        //        {//Grid feature to track
-        //            cout<<"Feature Extraction:\tGrid feature to track..."<<endl<<endl;
-        //            /*DenseFeatureDetector(float initFeatureScale=1.f,int featureScaleLevels=1,float featureScaleMul=0.1f,
-        //                   int initXyStep=6,int initImgBound=0,bool varyXyStepWithScale=true,bool varyImgBoundWithScale=false)*/
-        //            float initFeatureScale=1.f,featureScaleMul=0.1f;
-        //            int featureScaleLevels=1,initXyStep=6,initImgBound=0;
-        //            bool varyXyStepWithScale=true,varyImgBoundWithScale=false;
+    case GoodFeature:
+    {//Good feature to track
+        //initialize the default parameters
+        int maxCorners=1e8,blockSize=5;
+        double qualityLevel=0.001,minDistance=5,k=0.04;
+        bool useHarrisDEtector=false;
+        //set parameters
+        readConfigFile(FEATURE_CONFIG,"maxCorners",maxCorners);
+        readConfigFile(FEATURE_CONFIG,"blockSize",blockSize);
+        readConfigFile(FEATURE_CONFIG,"qualityLevel",qualityLevel);
+        readConfigFile(FEATURE_CONFIG,"minDistance",minDistance);
+        readConfigFile(FEATURE_CONFIG,"k",k);
+        readConfigFile(FEATURE_CONFIG,"useHarrisDetector",useHarrisDEtector);
+        //initialize feature detector
+        detector=new cv::GoodFeaturesToTrackDetector(maxCorners,qualityLevel,minDistance,blockSize,useHarrisDEtector,k);
+        //detect
+        detector->detect(img,kpts);
+        break;
+    }
+    case FastFeature:
+    {//Fast feature detector
+        int threshold=10;
+        bool nonmaxSuppression=true;
+        //set parameters
+        readConfigFile(FEATURE_CONFIG,"threshold", threshold);
+        readConfigFile(FEATURE_CONFIG,"nonmaxSuppression", nonmaxSuppression);
+        //initialize feature detector
+        detector=new cv::FastFeatureDetector(threshold, nonmaxSuppression);
+        //detect
+        detector->detect(img,kpts);
+        break;
+    }
+    case SIFT:
+    {//Sift feature
+        //            cout<<"Feature Extraction:\tFast feature to track..."<<endl<<endl;
+        //            /*  FastFeatureDetector(int threshold=10,bool nonmaxSuppression=true)*/
+        //            //initialize the parameters
+        //            int threshold=1;
+        //            bool nonmaxSuppression=true;
         //            //set parameters
-        //            readConfigFile(filename,"initFeatureScale",initFeatureScale);
-        //            readConfigFile(filename,"featureScaleMul",featureScaleMul);
-        //            readConfigFile(filename,"featureScaleLevels",featureScaleLevels);
-        //            readConfigFile(filename,"initXyStep",initXyStep);
-        //            readConfigFile(filename,"initImgBound",initImgBound);
-        //            readConfigFile(filename,"varyXyStepWithScale",varyXyStepWithScale);
-        //            readConfigFile(filename,"varyImgBoundWithScale",varyImgBoundWithScale);
+        //            readConfigFile(filename,"threshold",threshold);
+        //            readConfigFile(filename,"nonmaxSuppression",nonmaxSuppression);
         //            //initialize feature detector
-        //            detector=new DenseFeatureDetector(initFeatureScale,featureScaleLevels,featureScaleMul,
-        //                                              initXyStep,initImgBound,varyXyStepWithScale,varyImgBoundWithScale);
+        //            detector=new FastFeatureDetector(threshold, nonmaxSuppression);
         //            //detect
         //            if(ImageID=="left")
         //                detector->detect(img1,keypoints);
@@ -152,9 +122,65 @@ bool extractFeatures(const cv::Mat& img, std::vector<cv::KeyPoint>& kpts, Featur
         //                detector->detect(img1,keypoints);
         //                cerr<<"Unknown option for the image_id, the left image was detected instead!"<<endl;
         //            }
-        //            break;
-        //        }
-        default:
-            exitwithErrors("unknown type for feature extraction!");
-        }
+        break;
+    }
+    case ORB:
+    {
+        int nfeatures=1e8, nlevels=8, edgeThreshold=31;
+        int firstLevel=0, WTA_K=2, /*scoreType=ORB::HARRIS_SCORE, */patchSize=31;
+        float scaleFactor=1.2f;
+        //set parameters
+        readConfigFile(FEATURE_CONFIG,"nfeatures", nfeatures);
+        readConfigFile(FEATURE_CONFIG,"nlevels", nlevels);
+        readConfigFile(FEATURE_CONFIG,"edgeThreshold", edgeThreshold);
+        readConfigFile(FEATURE_CONFIG,"firstLevel", firstLevel);
+        readConfigFile(FEATURE_CONFIG,"WTA_K", WTA_K);
+        readConfigFile(FEATURE_CONFIG,"patchSize", patchSize);
+        readConfigFile(FEATURE_CONFIG,"scaleFactor", scaleFactor);
+        //initialize feature detector
+        cv::ORB orb(nfeatures, scaleFactor, nlevels,
+                    edgeThreshold, firstLevel, WTA_K, cv::ORB::HARRIS_SCORE, patchSize);
+        //detect
+        orb.detect(img,kpts);
+        break;
+    }
+    case BRISK:
+    {
+        int thresh=30, octaves=3;
+        float patternScale=1.0f;
+        //set parameters
+        readConfigFile(FEATURE_CONFIG,"thresh", thresh);
+        readConfigFile(FEATURE_CONFIG,"octaves", octaves);
+        readConfigFile(FEATURE_CONFIG,"patternScale", patternScale);
+        //initialize feature detector
+        cv::BRISK bsk(thresh, octaves, patternScale);
+        //detect
+        bsk.detect(img,kpts);
+        break;
+    }
+    case MSER:
+    {
+        int _delta=5, _min_area=60, _max_area=14400, _max_evolution=200, _edge_blur_size=5;
+        double _max_variation=0.25, _min_diversity=.2, _area_threshold=1.01, _min_margin=0.003;
+        //set parameters
+        readConfigFile(FEATURE_CONFIG,"_delta", _delta);
+        readConfigFile(FEATURE_CONFIG,"_min_area", _min_area);
+        readConfigFile(FEATURE_CONFIG,"_max_area", _max_area);
+        readConfigFile(FEATURE_CONFIG,"_max_evolution", _max_evolution);
+        readConfigFile(FEATURE_CONFIG,"_edge_blur_size", _edge_blur_size);
+        readConfigFile(FEATURE_CONFIG,"_max_variation", _max_variation);
+        readConfigFile(FEATURE_CONFIG,"_min_diversity", _min_diversity);
+        readConfigFile(FEATURE_CONFIG,"_area_threshold", _area_threshold);
+        readConfigFile(FEATURE_CONFIG,"_min_margin", _min_margin);
+        //initialize feature detector
+        cv::MSER ms(_delta, _min_area, _max_area, _max_variation, _min_diversity,
+                    _max_evolution, _area_threshold, _min_margin, _edge_blur_size);
+
+        //detect
+        ms.detect(img,kpts);
+        break;
+    }
+    default:
+        exitwithErrors("unknown type for feature extraction!");
+    }
 }
