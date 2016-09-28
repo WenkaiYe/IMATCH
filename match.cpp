@@ -411,7 +411,21 @@ void performMatching(const cv::Mat &img1, const cv::Mat &img2, const std::vector
     tin.generateDelaunay(pts1);
     std::vector<int> f2t1,f2t2; //not used below
     std::vector<std::vector<int> > t2f;
-    genFeature2TriangleTable(gridpoints, tin, f2t1, t2f);
+    std::vector<cv::Point2f> lpts, lpts2, rpts2;
+
+    //generate convex hull for seed points
+    std::vector<int> hull_idx;
+    std::vector<cv::Point2f> hull;
+    cv::convexHull(cv::Mat(pts1), hull_idx, true);
+    for(int k=0; k<hull_idx.size(); ++k)
+        hull.push_back(pts1[hull_idx[k]]);
+#pragma omp parallel for
+    for(int k=0; k<gridpoints.size(); ++k){
+        if(cv::pointPolygonTest(hull, gridpoints[k], false)==1)
+            lpts.push_back(gridpoints[k]);
+    }
+
+    genFeature2TriangleTable(lpts, tin, f2t1, t2f);
     cv::Mat img1_del, img2_del;
     tin.drawDelaunay(img1, img1_del);
 
@@ -435,7 +449,6 @@ void performMatching(const cv::Mat &img1, const cv::Mat &img2, const std::vector
     }
 
     //generate the candidate points
-    std::vector<cv::Point2f> lpts, rpts;
     for(int i=0; i<t2f.size(); ++i){
         //get grid points inside the triangle
         std::vector<int> pts_idx=t2f[i];
@@ -444,19 +457,20 @@ void performMatching(const cv::Mat &img1, const cv::Mat &img2, const std::vector
         cv::Mat img1_dst=img1_del.clone();
         cv::Mat img2_dst=img2_del.clone();
         for(int j=0; j<pts_idx.size(); ++j){
-            cv::Point2f leftpt=gridpoints[pts_idx[j]];
+            cv::Point2f leftpt=lpts[pts_idx[j]];
             cv::Point2f rightpt;
             affineTransform(leftpt, paras, rightpt);
-            lpts.push_back(leftpt);
-            rpts.push_back(rightpt);
+            lpts2.push_back(leftpt);
+            rpts2.push_back(rightpt);
             cv::circle(img1_dst, leftpt, 1, cv::Scalar(0, 0, 255), 1);
             cv::circle(img2_dst, rightpt, 1, cv::Scalar(0, 255, 0), 1);
         }
 //        showImagepair(img1_dst, img2_dst, "test", image_scale);
     }
 
+    printf("%d grid points are within the areas covered by seed points of both images \n", lpts2.size());
 
-    performMatching(img1, img2, lpts, rpts, matches, window_radius, search_radius, mcc_threshold);
+    performMatching(img1, img2, lpts2, rpts2, matches, window_radius, search_radius, mcc_threshold);
     //inverse consistency check
 //    std::vector<Correspondence> crpds;
 //    inverseCheck(matches12, matches21, crpds);
@@ -469,7 +483,6 @@ void performMatching(const cv::Mat &img1, const cv::Mat &img2, const std::vector
 //        match.p2=rpts[crpds[i].p2_id];
 //        matches.push_back(match);
 //    }
-int a=1;
 //    if(display_int_results<3)
 //        showCorrespondences(img1, img2, lpts, rpts, crpds);
 }
