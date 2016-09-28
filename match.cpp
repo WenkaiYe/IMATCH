@@ -80,10 +80,6 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     cv::Mat img1_fea, img2_fea;
     std::vector<cv::KeyPoint> kpts1, kpts2;
     int count1=0, count2=0;
-    Point2f2KeyPoint(lpts, kpts1);
-    Point2f2KeyPoint(rpts, kpts2);
-    cv::drawKeypoints(img1, kpts1, img1_fea, cv::Scalar(0, 0, 0));
-    cv::drawKeypoints(img2, kpts2, img2_fea, cv::Scalar(0, 0, 0));
 
     Delaunay tin(img1);
     std::vector<cv::Point2f> pts1,pts2;
@@ -93,21 +89,45 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     std::vector<std::vector<int> > t2f1,t2f2;
 
     //generate convex hull for seed points
-//    std::vector<int> hull_idx1, hull_idx2;
-//    cv::convexHull(cv::Mat(pts1), hull_idx1, true);
-//    cv::convexHull(cv::Mat(pts2), hull_idx2, true);
+    std::vector<int> hull_idx1, hull_idx2;
+    std::vector<cv::Point2f> hull1, hull2;
+    cv::convexHull(cv::Mat(pts1), hull_idx1, true);
+    for(int k=0; k<hull_idx1.size(); ++k)
+        hull1.push_back(pts1[hull_idx1[k]]);
+    std::vector<cv::Point2f> lpts2, rpts2;
+#pragma omp parallel for
+    for(int k=0; k<lpts.size(); ++k){
+        if(cv::pointPolygonTest(hull1, lpts[k], false)==1)
+            lpts2.push_back(lpts[k]);
+    }
+    cv::convexHull(cv::Mat(pts2), hull_idx2, true);
+    for(int k=0; k<hull_idx2.size(); ++k)
+        hull2.push_back(pts2[hull_idx2[k]]);
+#pragma omp parallel for
+    for(int k=0; k<rpts.size(); ++k){
+        if(cv::pointPolygonTest(hull2, rpts[k], false)==1)
+            rpts2.push_back(rpts[k]);
+    }
 
-    genFeature2TriangleTable(lpts, tin, f2t1, t2f1);
+    Point2f2KeyPoint(lpts2, kpts1);
+    Point2f2KeyPoint(rpts2, kpts2);
+    cv::drawKeypoints(img1, kpts1, img1_fea, cv::Scalar(0, 0, 0));
+    cv::drawKeypoints(img2, kpts2, img2_fea, cv::Scalar(0, 0, 0));
+//    showImage(img1_fea,"test",0.5);
+//    showImage(img2_fea,"test",0.5);
 
     cv::Mat img1_del, img2_del;
     tin.drawDelaunay(img1_fea, img1_del);
 
+    genFeature2TriangleTable(lpts2, tin, f2t1, t2f1);
+
     if(display_int_results<1)
-        showFeatureInsideTriangles(img1, lpts, tin, t2f1);
+        showFeatureInsideTriangles(img1, lpts2, tin, t2f1);
 
     tin.resetTriPoints(pts2);
     tin.drawDelaunay(img2_fea, img2_del);
-    genFeature2TriangleTable(rpts, tin, f2t2, t2f2);
+
+    genFeature2TriangleTable(rpts2, tin, f2t2, t2f2);
 
     for(int i=0; i<t2f1.size(); ++i){
         count1+=t2f1[i].size();
@@ -136,9 +156,9 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
 
     //symmetrically match
     std::vector<Correspondence> matches12, matches21;
-    ftfMatchImpl(img2, img1, rpts, lpts, t2f2, affinePars_inverse, matches21, window_radius, search_radius, mcc_threshold, img2_del, img1_del);
+    ftfMatchImpl(img2, img1, rpts2, lpts2, t2f2, affinePars_inverse, matches21, window_radius, search_radius, mcc_threshold, img2_del, img1_del);
 
-    ftfMatchImpl(img1, img2, lpts, rpts, t2f1, affinePars, matches12, window_radius, search_radius, mcc_threshold, img1_del, img2_del);
+    ftfMatchImpl(img1, img2, lpts2, rpts2, t2f1, affinePars, matches12, window_radius, search_radius, mcc_threshold, img1_del, img2_del);
 //    showCorrespondences(img1, img2, lpts, rpts, matches12);
 //    std::cout<<matches12.size()<<std::endl;
 //    std::vector<cv::Point2f> tmp;
@@ -158,13 +178,13 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     for(int i=0; i<crpds.size(); ++i){
         Match match;
         match.corr=crpds[i].corr;
-        match.p1=lpts[crpds[i].p1_id];
-        match.p2=rpts[crpds[i].p2_id];
+        match.p1=lpts2[crpds[i].p1_id];
+        match.p2=rpts2[crpds[i].p2_id];
         matches.push_back(match);
     }
 
     if(display_int_results<3)
-        showCorrespondences(img1, img2, lpts, rpts, crpds);
+        showCorrespondences(img1, img2, lpts2, rpts2, crpds);
 }
 
 void ftfMatchImpl(const cv::Mat &img1, const cv::Mat &img2,
