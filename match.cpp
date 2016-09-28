@@ -79,6 +79,7 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     matches.clear();
     cv::Mat img1_fea, img2_fea;
     std::vector<cv::KeyPoint> kpts1, kpts2;
+    int count1=0, count2=0;
     Point2f2KeyPoint(lpts, kpts1);
     Point2f2KeyPoint(rpts, kpts2);
     cv::drawKeypoints(img1, kpts1, img1_fea, cv::Scalar(0, 0, 0));
@@ -90,7 +91,14 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     tin.generateDelaunay(pts1);
     std::vector<int> f2t1,f2t2; //not used below
     std::vector<std::vector<int> > t2f1,t2f2;
+
+    //generate convex hull for seed points
+//    std::vector<int> hull_idx1, hull_idx2;
+//    cv::convexHull(cv::Mat(pts1), hull_idx1, true);
+//    cv::convexHull(cv::Mat(pts2), hull_idx2, true);
+
     genFeature2TriangleTable(lpts, tin, f2t1, t2f1);
+
     cv::Mat img1_del, img2_del;
     tin.drawDelaunay(img1_fea, img1_del);
 
@@ -100,6 +108,15 @@ void performMatching(const cv::Mat& img1, const cv::Mat& img2,
     tin.resetTriPoints(pts2);
     tin.drawDelaunay(img2_fea, img2_del);
     genFeature2TriangleTable(rpts, tin, f2t2, t2f2);
+
+    for(int i=0; i<t2f1.size(); ++i){
+        count1+=t2f1[i].size();
+        count2+=t2f2[i].size();
+    }
+    printf("%d features are within the areas covered by seed points of the first image \n"
+           "and %d features are within the aeras covered by seed points of the second image...\n",
+           count1,count2);
+
     std::vector<std::vector<int> > list; //point ids of vertexes of each triangle
     tin.getTrilist(list);
 
@@ -404,20 +421,19 @@ void performMatching(const cv::Mat &img1, const cv::Mat &img2, const std::vector
         std::vector<int> pts_idx=t2f[i];
         //get transformation parameters
         std::vector<double> paras=affinePars[i];
+        cv::Mat img1_dst=img1_del.clone();
+        cv::Mat img2_dst=img2_del.clone();
         for(int j=0; j<pts_idx.size(); ++j){
-//            cv::Mat img1_dst=img1_del.clone();
-//            cv::Mat img2_dst=img2_del.clone();
             cv::Point2f leftpt=gridpoints[pts_idx[j]];
             cv::Point2f rightpt;
             affineTransform(leftpt, paras, rightpt);
             lpts.push_back(leftpt);
             rpts.push_back(rightpt);
-//            cv::circle(img1_dst, leftpt, 3, cv::Scalar(0, 0, 255), 2);
-//            cv::circle(img2_dst, rightpt, 3, cv::Scalar(0, 255, 0), 2);
-//            showImagepair(img1_dst, img2_dst, "test", image_scale);
+            cv::circle(img1_dst, leftpt, 1, cv::Scalar(0, 0, 255), 1);
+            cv::circle(img2_dst, rightpt, 1, cv::Scalar(0, 255, 0), 1);
         }
+//        showImagepair(img1_dst, img2_dst, "test", image_scale);
     }
-
 
 
     performMatching(img1, img2, lpts, rpts, matches, window_radius, search_radius, mcc_threshold);
@@ -433,7 +449,7 @@ void performMatching(const cv::Mat &img1, const cv::Mat &img2, const std::vector
 //        match.p2=rpts[crpds[i].p2_id];
 //        matches.push_back(match);
 //    }
-
+int a=1;
 //    if(display_int_results<3)
 //        showCorrespondences(img1, img2, lpts, rpts, crpds);
 }

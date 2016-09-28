@@ -8,7 +8,7 @@ char control_path[MAX_LENGTH_OF_FILEPATH];   /*control path*/
 char cur_dir[MAX_LENGTH_OF_FILEPATH];        /*current directory*/
 std::string img1_path;                       /*file paths of the stereo image pair*/
 std::string img2_path;
-int display_int_results=-1;                  /*show feature extraction results ?????*/
+int display_int_results=10;                  /*show feature extraction results ?????*/
 double image_scale=1.0;                      /*image scale for display*/
 //bool parallel=false;                       /*perform matching parallelly*/
 //bool histeq=false;                         /*perform histogram equalization*/

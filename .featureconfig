@@ -11,9 +11,9 @@
 
 #********* (1) parameters of the good feature algorithm *********
 maxCorners=100000000
-qualityLevel=0.001
-minDistance=5
-blockSize=5
+qualityLevel=0.01
+minDistance=8
+blockSize=10
 useHarrisDetector=false
 k=0.04
 
